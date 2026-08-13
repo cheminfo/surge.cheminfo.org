@@ -25,5 +25,23 @@ export default defineConfig(
     files: ['backend/**', 'scripts/**'],
     languageOptions: { globals: { ...globals.nodeBuiltin } },
   },
-  { files: ['frontend/**'], extends: [react] },
+  {
+    files: ['frontend/**'],
+    extends: [react],
+    rules: {
+      '@typescript-eslint/no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: '@blueprintjs/core',
+              importNames: ['Popover'],
+              message:
+                'Blueprint’s legacy Popover does not position itself under React 19: use PopoverNext.',
+            },
+          ],
+        },
+      ],
+    },
+  },
 );

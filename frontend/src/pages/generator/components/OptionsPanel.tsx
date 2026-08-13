@@ -1,91 +1,103 @@
 import {
-  Card,
+  Button,
   Collapse,
+  Divider,
   FormGroup,
-  H5,
   InputGroup,
   Switch,
+  Tag,
 } from '@blueprintjs/core';
-import type { Signal } from '@preact/signals-react';
 import { useSignals } from '@preact/signals-react/runtime';
 
-import { preferences, view } from '../../../state/generator.ts';
-
-interface SwitchOption {
-  signal: Signal<boolean>;
-  label: string;
-}
-
-interface RangeOption {
-  signal: Signal<string>;
-  label: string;
-}
-
-const MAIN_SWITCHES: SwitchOption[] = [
-  {
-    signal: preferences.aromaticity,
-    label: 'Keep one Kekulé structure per aromatic ring',
-  },
-  { signal: preferences.disallowTripleBonds, label: 'Disallow triple bonds' },
-  { signal: preferences.requirePlanarity, label: 'Require planarity' },
-  { signal: preferences.evenRingsOnly, label: 'Only rings of even length' },
-];
-
-const RANGES: RangeOption[] = [
-  { signal: preferences.limitBonds, label: 'Distinct non-H bonds' },
-  { signal: preferences.limit3Rings, label: 'Cycles of length 3' },
-  { signal: preferences.limit4Rings, label: 'Cycles of length 4' },
-  { signal: preferences.limit5Rings, label: 'Cycles of length 5' },
-  { signal: preferences.limit6Rings, label: 'Cycles of length 6' },
-  { signal: preferences.limitCarbon6Rings, label: 'Chord-free C6 cycles' },
-];
-
-/** Single integers rather than ranges; empty leaves surge on its default of 4. */
-const COUNTS: RangeOption[] = [
-  { signal: preferences.maxDegree, label: 'Maximum degree' },
-  { signal: preferences.maxCoordination, label: 'Maximum coordination' },
-];
-
-const SUBSTRUCTURE_SWITCHES: SwitchOption[] = [
-  {
-    signal: preferences.noSmallRingsTripleBonds,
-    label: 'No triple bond in a ring up to length 7',
-  },
-  {
-    signal: preferences.bredsRuleOne,
-    label: "Bredt's rule, two rings sharing one bond",
-  },
-  {
-    signal: preferences.bredsRuleTwo,
-    label: "Bredt's rule, two rings sharing two bonds",
-  },
-  {
-    signal: preferences.bredsRuleThree,
-    label: "Bredt's rule, two six-rings sharing three bonds",
-  },
-  { signal: preferences.noAllene, label: 'No allene A=A=A' },
-  {
-    signal: preferences.noAlleneInSmallRings,
-    label: 'No allene in a ring up to length 8',
-  },
-  { signal: preferences.noK33K24, label: 'No K33 or K24 substructure' },
-  { signal: preferences.noCone, label: 'No cone of P4, no K4 with a 3-ear' },
-  {
-    signal: preferences.noSmallRingsCommonAtoms,
-    label: 'No atom in two rings of length 3 or 4',
-  },
-];
+import { data, preferences, view } from '../../../state/generator.ts';
+import {
+  COUNTS,
+  MAIN_SWITCHES,
+  RANGES,
+  SUBSTRUCTURE_SWITCHES,
+} from '../../../state/generatorOptions.ts';
+import { runSearch } from '../../../state/generatorUrl.ts';
+import { isEmbedded, isHidden } from '../../../state/shareConfig.ts';
 
 /**
- * What surge is allowed to build. Everything below the first block is the
- * kind of restriction only a chemist asks for, so it starts folded.
+ * Everything a search does not need: how much to return, the substructure
+ * filter and what surge is allowed to build. It lives inside a fold, and the
+ * last block is the kind of restriction only a chemist asks for, so it folds
+ * again.
  * @returns The options panel component.
  */
 export default function OptionsPanel() {
   useSignals();
+  const fragmentCode = data.fragmentCode.value;
   return (
-    <Card>
-      <H5>Restrictions</H5>
+    <div className="options-panel">
+      {/* What a run costs the service is never handed to a framed page: it
+          runs on the limit and the timeout its link carries. */}
+      {isEmbedded() ? null : (
+        <div className="field-row">
+          <FormGroup label="Limit" helperText="Structures returned">
+            <InputGroup
+              type="number"
+              min={1}
+              value={String(preferences.limit.value)}
+              onValueChange={(value) => {
+                preferences.limit.value = Number(value) || 1;
+              }}
+            />
+          </FormGroup>
+          <FormGroup label="Timeout" helperText="Seconds, at most 30">
+            <InputGroup
+              type="number"
+              min={0.1}
+              max={30}
+              step={1}
+              value={String(preferences.timeout.value)}
+              onValueChange={(value) => {
+                preferences.timeout.value = Number(value) || 2;
+              }}
+            />
+          </FormGroup>
+        </div>
+      )}
+      <Switch
+        checked={preferences.idCode.value}
+        label="Compute the openchemlib idCode"
+        onChange={(event) => {
+          preferences.idCode.value = event.currentTarget.checked;
+        }}
+      />
+
+      {isHidden('substructure') ? null : (
+        <>
+          <Divider />
+          <div className="field-row">
+            <Button
+              icon="draw"
+              text="Substructure filter"
+              onClick={() => {
+                view.isFragmentDialogOpen.value = true;
+              }}
+            />
+            {fragmentCode ? (
+              <>
+                <Tag intent="primary">active</Tag>
+                <Button
+                  icon="eraser"
+                  text="Clear filter"
+                  onClick={() => {
+                    data.fragmentCode.value = '';
+                    void runSearch();
+                  }}
+                />
+              </>
+            ) : (
+              <span className="muted">No fragment drawn</span>
+            )}
+          </div>
+        </>
+      )}
+
+      <Divider />
       {MAIN_SWITCHES.map(({ signal, label }) => (
         <Switch
           key={label}
@@ -144,6 +156,6 @@ export default function OptionsPanel() {
           />
         ))}
       </Collapse>
-    </Card>
+    </div>
   );
 }

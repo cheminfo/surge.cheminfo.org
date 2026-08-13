@@ -1,16 +1,22 @@
+import { Button } from '@blueprintjs/core';
 import { useSignals } from '@preact/signals-react/runtime';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 import { fetchVersion } from './api/surge.ts';
+import ShareDialog from './components/share/ShareDialog.tsx';
 import ExercisesPage from './pages/exercises/ExercisesPage.tsx';
+import FragmentsPage from './pages/fragments/FragmentsPage.tsx';
 import GeneratorPage from './pages/generator/GeneratorPage.tsx';
 import { data } from './state/generator.ts';
+import { writeGeneratorAddress } from './state/generatorUrl.ts';
 import type { Page } from './state/router.ts';
-import { isEmbedded, navigate, route } from './state/router.ts';
+import { navigate, route } from './state/router.ts';
+import { isEmbedded } from './state/shareConfig.ts';
 
 const TABS: Array<{ page: Page; label: string }> = [
   { page: 'generator', label: 'Generator' },
   { page: 'exercises', label: 'Exercises' },
+  { page: 'fragments', label: 'Fragments' },
 ];
 
 /**
@@ -34,15 +40,23 @@ export default function App() {
 
   return (
     <div className="page">
-      {isEmbedded ? null : <Header page={page} />}
-      {page === 'exercises' ? <ExercisesPage /> : <GeneratorPage />}
+      {isEmbedded() ? null : <Header page={page} />}
+      <CurrentPage page={page} />
     </div>
   );
+}
+
+function CurrentPage(props: { page: Page }) {
+  if (props.page === 'exercises') return <ExercisesPage />;
+  if (props.page === 'fragments') return <FragmentsPage />;
+  return <GeneratorPage />;
 }
 
 function Header(props: { page: Page }) {
   useSignals();
   const version = data.surgeVersion.value;
+  const [isSharing, setSharing] = useState(false);
+
   return (
     <header className="page-header">
       <h1>
@@ -72,7 +86,22 @@ function Header(props: { page: Page }) {
         >
           Surge{version ? ` ${version}` : ''}
         </a>
+        <Button
+          size="small"
+          icon="share"
+          text="Share"
+          title="Share a link to this page, or frame it in your own site"
+          onClick={() => {
+            // The generator writes its search when it runs one; a form left
+            // unsearched would otherwise be shared as the previous result.
+            if (props.page === 'generator') writeGeneratorAddress();
+            setSharing(true);
+          }}
+        />
       </nav>
+      {isSharing ? (
+        <ShareDialog isOpen onClose={() => setSharing(false)} />
+      ) : null}
     </header>
   );
 }

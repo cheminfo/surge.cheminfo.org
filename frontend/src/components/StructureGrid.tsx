@@ -4,6 +4,8 @@ import { IdcodeSvgRenderer, SmilesSvgRenderer } from 'react-ocl';
 export interface GridStructure {
   smiles?: string;
   idCode?: string;
+  /** Where the atoms were put, when the drawing is to be kept as it was. */
+  coordinates?: string;
   /** Caption under the drawing. */
   label?: string;
   /**
@@ -59,7 +61,12 @@ const StructureCell = memo(function StructureCell(props: {
       className={`structure-cell structure-cell--${structure.tone ?? 'plain'}`}
     >
       {structure.idCode ? (
-        <IdcodeSvgRenderer idcode={structure.idCode} width={size} autoCrop />
+        <IdcodeSvgRenderer
+          idcode={structure.idCode}
+          coordinates={structure.coordinates}
+          width={size}
+          autoCrop
+        />
       ) : (
         <SmilesSvgRenderer
           smiles={structure.smiles ?? ''}

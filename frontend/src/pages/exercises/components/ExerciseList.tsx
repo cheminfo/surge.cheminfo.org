@@ -10,6 +10,8 @@ import {
   openExercise,
   progressOf,
 } from '../../../state/exercises.ts';
+import { isHidden } from '../../../state/shareConfig.ts';
+import { revealDrawing } from '../drawingAnchor.ts';
 
 /**
  * Every exercise of the set, how far the student got in each, and the way out
@@ -54,16 +56,20 @@ export default function ExerciseList() {
         ))}
       </ul>
 
-      <Button
-        fill
-        variant="minimal"
-        icon="trash"
-        intent="danger"
-        text="Clear all answers"
-        onClick={() => setClearing(true)}
-      />
+      {isHidden('clear') ? null : (
+        <Button
+          fill
+          variant="minimal"
+          icon="trash"
+          intent="danger"
+          text="Clear all answers"
+          onClick={() => setClearing(true)}
+        />
+      )}
       <Alert
         isOpen={isClearing}
+        canEscapeKeyCancel
+        canOutsideClickCancel
         intent="danger"
         icon="trash"
         cancelButtonText="Keep them"
@@ -160,7 +166,10 @@ function ExerciseRow(props: {
         type="button"
         className={classes.join(' ')}
         data-selected={isActive ? 'true' : undefined}
-        onClick={() => void openExercise(exercise.mf)}
+        onClick={() => {
+          void openExercise(exercise.mf);
+          revealDrawing();
+        }}
       >
         <span className="exercise-row-index">{index}</span>
         <span className="exercise-row-mf">

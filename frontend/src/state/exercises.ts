@@ -1,8 +1,7 @@
-import { signal } from '@preact/signals-react';
-
-import type { Exercise, ExerciseAnswer, ExerciseSet } from '../api/surge.ts';
 import { checkStructure, fetchAnswers, fetchExercise } from '../api/surge.ts';
+import { errorMessage } from '../utils/errorMessage.ts';
 
+import { refreshProgressHints } from './exerciseHints.ts';
 import {
   EMPTY_PROGRESS,
   clearProgress,
@@ -10,40 +9,25 @@ import {
   updateProgress,
 } from './exerciseProgress.ts';
 import { loadSetFromAddress } from './exerciseSets.ts';
+import type { Feedback } from './exerciseState.ts';
+import { data, isWanted, setWanted, view } from './exerciseState.ts';
 import { navigate, searchParameter } from './router.ts';
 
-export { progress, progressOf } from './exerciseProgress.ts';
+export {
+  drawingOf,
+  lastDrawing,
+  progress,
+  progressOf,
+} from './exerciseProgress.ts';
 export type { ExerciseProgress } from './exerciseProgress.ts';
-
-export interface Feedback {
-  intent: 'success' | 'warning' | 'danger';
-  message: string;
-  /** Formula of the structure that was refused, when that is the reason. */
-  mf?: string;
-}
-
-export const data = {
-  set: signal<ExerciseSet | null>(null),
-  current: signal<Exercise | null>(null),
-  answers: signal<ExerciseAnswer[] | null>(null),
-};
-
-export const view = {
-  isLoadingSet: signal(false),
-  isLoadingExercise: signal(false),
-  isChecking: signal(false),
-  feedback: signal<Feedback | null>(null),
-  error: signal(''),
-  /** Bumped to remount the editor once a structure has been accepted. */
-  editorGeneration: signal(0),
-};
-
-/**
- * Whichever exercise the student last asked for. Every answer that comes back
- * is checked against it, so a slow request that resolves after they moved on
- * is dropped rather than shown under the wrong formula.
- */
-let wanted: string | undefined;
+export { hintLadder, revealHint } from './exerciseHints.ts';
+export {
+  foldInstructionsOnDrawing,
+  preferences as instructionPreferences,
+  setShowInstructions,
+} from './exercisePreferences.ts';
+export type { Feedback, Hint } from './exerciseState.ts';
+export { data, view } from './exerciseState.ts';
 
 /** Load the set the address names, then open an exercise of it. */
 export async function loadSet(): Promise<void> {
@@ -60,7 +44,7 @@ export async function loadSet(): Promise<void> {
     if (target) await openExercise(target.mf);
   } catch (error) {
     data.set.value = null;
-    view.error.value = describe(error);
+    view.error.value = errorMessage(error);
   } finally {
     view.isLoadingSet.value = false;
   }
@@ -71,26 +55,28 @@ export async function loadSet(): Promise<void> {
  * @param mf - Molecular formula of the exercise.
  */
 export async function openExercise(mf: string): Promise<void> {
-  wanted = mf;
+  setWanted(mf);
   view.isLoadingExercise.value = true;
   view.feedback.value = null;
   view.error.value = '';
   data.answers.value = null;
+  data.progressHints.value = [];
   // Replaced rather than pushed: the address records where the student is, and
   // the back button should leave the activity, not walk back through every
   // exercise they looked at.
   navigate('exercises', { exercise: mf }, { replace: true });
   try {
     const exercise = await fetchExercise(mf);
-    if (wanted !== mf) return;
+    if (!isWanted(mf)) return;
     data.current.value = exercise;
+    await refreshProgressHints(mf);
     if (progressOf(mf).gaveUp) await revealAnswers(mf);
   } catch (error) {
-    if (wanted !== mf) return;
+    if (!isWanted(mf)) return;
     data.current.value = null;
-    view.error.value = describe(error);
+    view.error.value = errorMessage(error);
   } finally {
-    if (wanted === mf) view.isLoadingExercise.value = false;
+    if (isWanted(mf)) view.isLoadingExercise.value = false;
   }
 }
 
@@ -119,7 +105,7 @@ export async function submitStructure(idCode: string): Promise<void> {
   try {
     const result = await checkStructure(exercise.mf, idCode);
     // The student may have moved on while surge was working.
-    if (wanted !== exercise.mf) return;
+    if (!isWanted(exercise.mf)) return;
 
     if (!result.correct) {
       view.feedback.value = refusal(result.reason, result.mf);
@@ -135,32 +121,27 @@ export async function submitStructure(idCode: string): Promise<void> {
       return;
     }
 
-    updateProgress(exercise.mf, { found: [...current.found, result.idCode] });
-    view.editorGeneration.value++;
+    updateProgress(exercise.mf, {
+      found: [...current.found, result.idCode],
+      // Keep the drawing itself, so a reload gives back the student's own
+      // structures and the canvas reopens on the last one.
+      drawings: { ...current.drawings, [result.idCode]: idCode.trim() },
+    });
     view.feedback.value = {
       intent: 'success',
       message:
         current.found.length + 1 === exercise.count
           ? 'That is the last one. Every isomer found!'
-          : 'Correct, that is one of them.',
+          : 'Correct, that one counts. It stays on the canvas: move a branch to reach the next one.',
     };
+    await refreshProgressHints(exercise.mf);
   } catch (error) {
-    if (wanted === exercise.mf) {
-      view.feedback.value = { intent: 'danger', message: describe(error) };
+    if (isWanted(exercise.mf)) {
+      view.feedback.value = { intent: 'danger', message: errorMessage(error) };
     }
   } finally {
     view.isChecking.value = false;
   }
-}
-
-/** Reveal the next hint of the exercise being solved. */
-export function revealHint(): void {
-  const exercise = data.current.peek();
-  if (!exercise) return;
-  const { hintsRevealed } = progressOf(exercise.mf);
-  updateProgress(exercise.mf, {
-    hintsRevealed: Math.min(hintsRevealed + 1, exercise.hints.length),
-  });
 }
 
 /** Show the correction of the exercise being solved. */
@@ -177,17 +158,25 @@ export async function giveUp(): Promise<void> {
  */
 export function resetExercise(mf: string): void {
   updateProgress(mf, { ...EMPTY_PROGRESS });
-  data.answers.value = null;
-  view.feedback.value = null;
-  view.editorGeneration.value++;
+  startOver(mf);
 }
 
 /** Forget everything found in every exercise. */
 export function clearAllProgress(): void {
   clearProgress();
+  startOver(data.current.peek()?.mf);
+}
+
+/**
+ * Put the page back where an untouched exercise starts: no correction, no
+ * feedback, an empty canvas, and a ladder built from nothing found.
+ * @param mf - Formula being worked on, when there is one.
+ */
+function startOver(mf: string | undefined): void {
   data.answers.value = null;
   view.feedback.value = null;
   view.editorGeneration.value++;
+  if (mf) void refreshProgressHints(mf);
 }
 
 function refusal(reason: string, mf: string): Feedback {
@@ -209,12 +198,8 @@ async function revealAnswers(mf: string): Promise<void> {
   try {
     const answers = await fetchAnswers(mf);
     // Never show one exercise's correction under another one.
-    if (wanted === mf) data.answers.value = answers;
+    if (isWanted(mf)) data.answers.value = answers;
   } catch (error) {
-    if (wanted === mf) view.error.value = describe(error);
+    if (isWanted(mf)) view.error.value = errorMessage(error);
   }
-}
-
-function describe(error: unknown): string {
-  return error instanceof Error ? error.message : String(error);
 }

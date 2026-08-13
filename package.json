@@ -29,7 +29,7 @@
     "prettier-write": "prettier --write .",
     "test": "npm run test-only && npm run check-types && npm run eslint && npm run prettier",
     "test-e2e": "npm run test-e2e -w frontend",
-    "test-only": "npm run test-only -w backend"
+    "test-only": "npm run test-only -w backend && npm run test-only -w frontend"
   },
   "overrides": {
     "react": "^19.2.8",

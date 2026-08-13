@@ -11,6 +11,7 @@ import Fastify from 'fastify';
 
 import { config } from './config.ts';
 import exerciseRoutes from './routes/exercises.ts';
+import fragmentRoutes from './routes/fragments.ts';
 import generateRoutes from './routes/generate.ts';
 import healthRoutes from './routes/health.ts';
 import type { FastifyTyped } from './types.ts';
@@ -56,6 +57,10 @@ export async function buildApp(
       tags: [
         { name: 'generate', description: 'Enumerate isomers' },
         { name: 'exercises', description: 'Find every isomer yourself' },
+        {
+          name: 'fragments',
+          description: 'The motifs a hint is built from',
+        },
         { name: 'service', description: 'Health and version' },
       ],
     },
@@ -69,6 +74,7 @@ export async function buildApp(
   await fastify.register(healthRoutes);
   await fastify.register(generateRoutes);
   await fastify.register(exerciseRoutes);
+  await fastify.register(fragmentRoutes);
 
   registerFrontend(fastify);
 

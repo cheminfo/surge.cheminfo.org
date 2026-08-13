@@ -2,7 +2,8 @@ import { Card, H5, NonIdealState, Tag } from '@blueprintjs/core';
 import { useSignals } from '@preact/signals-react/runtime';
 
 import StructureGrid from '../../../components/StructureGrid.tsx';
-import { data, progressOf } from '../../../state/exercises.ts';
+import { splitEditorValue } from '../../../components/editorValue.ts';
+import { data, drawingOf, progressOf } from '../../../state/exercises.ts';
 
 /**
  * The structures the student has found so far.
@@ -27,15 +28,21 @@ export default function FoundPanel() {
         <NonIdealState
           icon="draw"
           title="Nothing yet"
-          description="Draw an isomer on the left and add it."
+          description="Draw an isomer on the left; it lands here as soon as it counts."
         />
       ) : (
         <StructureGrid
-          structures={found.map((idCode, index) => ({
-            idCode,
-            tone: 'found',
-            label: String(index + 1),
-          }))}
+          structures={found.map((answer, index) => {
+            // Their own drawing, so what comes back after a reload is the
+            // structure they laid out rather than a computed layout of it.
+            const drawing = splitEditorValue(drawingOf(exercise.mf, answer));
+            return {
+              idCode: drawing.idCode || answer,
+              coordinates: drawing.coordinates,
+              tone: 'found' as const,
+              label: String(index + 1),
+            };
+          })}
           size={130}
         />
       )}

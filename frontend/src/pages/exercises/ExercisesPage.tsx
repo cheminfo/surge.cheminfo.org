@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 
 import { data, loadSet, syncFromAddress, view } from '../../state/exercises.ts';
 import { route } from '../../state/router.ts';
+import { isHidden } from '../../state/shareConfig.ts';
 
 import AnswersPanel from './components/AnswersPanel.tsx';
 import DrawAnswerPanel from './components/DrawAnswerPanel.tsx';
@@ -11,6 +12,7 @@ import ExerciseList from './components/ExerciseList.tsx';
 import FoundPanel from './components/FoundPanel.tsx';
 import HintsPanel from './components/HintsPanel.tsx';
 import InstructionsPanel from './components/InstructionsPanel.tsx';
+import { setDrawingAnchor } from './drawingAnchor.ts';
 
 /**
  * Find every structural isomer of a formula yourself.
@@ -51,19 +53,23 @@ export default function ExercisesPage() {
   }
 
   return (
-    <div className="exercises">
-      <ExerciseList />
+    <div
+      className={isHidden('list') ? 'exercises exercises--alone' : 'exercises'}
+    >
+      {isHidden('list') ? null : <ExerciseList />}
       <div className="panel-stack">
         <InstructionsPanel />
-        <DrawAnswerPanel />
-        <HintsPanel />
+        <div ref={setDrawingAnchor}>
+          <DrawAnswerPanel />
+        </div>
+        {isHidden('hints') ? null : <HintsPanel />}
       </div>
       <div className="panel-stack">
         {view.error.value ? (
           <Callout intent="danger">{view.error.value}</Callout>
         ) : null}
         <FoundPanel />
-        <AnswersPanel />
+        {isHidden('answers') ? null : <AnswersPanel />}
       </div>
     </div>
   );

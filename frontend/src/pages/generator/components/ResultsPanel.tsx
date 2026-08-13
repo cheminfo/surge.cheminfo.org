@@ -56,12 +56,14 @@ export default function ResultsPanel() {
           {result.returned} of {result.found}
         </Tag>
       </div>
-      <StructureGrid
-        structures={result.result.map((entry, index) => ({
-          smiles: entry.smiles,
-          label: String(index + 1),
-        }))}
-      />
+      <div className="results-scroll">
+        <StructureGrid
+          structures={result.result.map((entry, index) => ({
+            smiles: entry.smiles,
+            label: String(index + 1),
+          }))}
+        />
+      </div>
     </Card>
   );
 }

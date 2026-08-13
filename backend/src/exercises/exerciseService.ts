@@ -1,27 +1,22 @@
-import { Molecule } from 'openchemlib';
+import { httpErrors } from '@fastify/sensible';
+import type { Molecule } from 'openchemlib';
 
+import { FRAGMENTS } from '../chemistry/fragments/index.ts';
 import {
   constitutionIDCode,
   moleculeFormula,
   moleculeFromIDCode,
-  normalizeFormula,
 } from '../chemistry/molecule.ts';
 import type { SurgeOptions } from '../schemas/surgeOptions.ts';
-import { buildFlags } from '../surge/buildFlags.ts';
-import { runSurge } from '../surge/runSurge.ts';
 
+import type { ExerciseAnswer, FragmentUsage } from './answerSet.ts';
+import { enumerate } from './answerSet.ts';
+import type { FragmentCount, ProgressHint } from './fragmentHints.ts';
+import { buildFragmentHints } from './fragmentHints.ts';
+import { buildCoverage } from './hintCoverage.ts';
 import { buildHints } from './hints.ts';
 
-/** An exercise the student cannot finish is not an exercise. */
-const MAX_ANSWERS = 500;
-const ENUMERATION_TIMEOUT_MS = 10_000;
-/** How many enumerations are remembered, oldest dropped first. */
-const MAX_CACHED_EXERCISES = 200;
-
-export interface ExerciseAnswer {
-  idCode: string;
-  smiles: string;
-}
+export type { ExerciseAnswer, FragmentUsage } from './answerSet.ts';
 
 export interface Exercise {
   mf: string;
@@ -40,14 +35,6 @@ export interface CheckResult {
   /** Molecular formula of the drawn structure. */
   mf: string;
 }
-
-interface Answers {
-  mf: string;
-  answers: ExerciseAnswer[];
-  byIDCode: Set<string>;
-}
-
-const cache = new Map<string, Promise<Answers>>();
 
 /**
  * Describe one exercise without giving its answers away.
@@ -85,6 +72,78 @@ export async function getExerciseAnswers(
 }
 
 /**
+ * The whole ladder, given what the student has already found: what the formula
+ * says, minus everything they have exhausted, then the motifs of the answers
+ * compared with the ones their structures hold, what they never drew first.
+ * @param mf - Molecular formula of the exercise.
+ * @param found - Canonical idCodes of the structures they found.
+ * @param options - Restrictions applied when enumerating the answers.
+ * @returns The hints, vague first.
+ */
+export async function getProgressHints(
+  mf: string,
+  found: string[],
+  options?: SurgeOptions,
+): Promise<ProgressHint[]> {
+  const {
+    mf: formula,
+    fragmentsByIDCode,
+    usage,
+  } = await enumerate(mf, options);
+
+  const counts = new Map<string, FragmentCount>(
+    FRAGMENTS.map((fragment) => [
+      fragment.id,
+      { answers: usage.get(fragment.id)?.answers ?? 0, found: 0 },
+    ]),
+  );
+  for (const idCode of new Set(found)) {
+    for (const id of fragmentsByIDCode.get(idCode) ?? []) {
+      const count = counts.get(id);
+      if (count) count.found++;
+    }
+  }
+
+  const fragmentHints = buildFragmentHints(counts);
+  // Once every motif is complete, what the formula says has nothing left to
+  // add: it would only offer the families the student has already drawn.
+  if (fragmentHints.some((hint) => hint.kind === 'complete')) {
+    return fragmentHints;
+  }
+
+  const general = buildHints(formula, buildCoverage(counts)).map(
+    (text, index): ProgressHint => ({
+      id: `general-${index}`,
+      kind: 'general',
+      text,
+    }),
+  );
+  return [...general, ...fragmentHints];
+}
+
+/**
+ * How many answers of an exercise hold each motif, which is what the debug
+ * page shows a teacher.
+ * @param mf - Molecular formula of the exercise.
+ * @param options - Restrictions applied when enumerating the answers.
+ * @returns The formula, how many answers there are, and one entry per motif
+ * the library holds.
+ */
+export async function getFragmentUsage(
+  mf: string,
+  options?: SurgeOptions,
+): Promise<{ mf: string; count: number; usage: FragmentUsage[] }> {
+  const { mf: formula, answers, usage } = await enumerate(mf, options);
+  return {
+    mf: formula,
+    count: answers.length,
+    usage: FRAGMENTS.map(
+      (fragment) => usage.get(fragment.id) ?? { id: fragment.id, answers: 0 },
+    ),
+  };
+}
+
+/**
  * Decide whether a drawn structure is one of the isomers to find.
  * @param mf - Molecular formula of the exercise.
  * @param idCode - What the student drew, coordinates included or not.
@@ -102,9 +161,7 @@ export async function checkStructure(
   try {
     molecule = moleculeFromIDCode(idCode);
   } catch {
-    throw Object.assign(new Error('That structure could not be read'), {
-      statusCode: 400,
-    });
+    throw httpErrors.badRequest('That structure could not be read');
   }
 
   const drawn = {
@@ -130,56 +187,4 @@ function safeFormula(molecule: Molecule): string {
   } catch {
     return molecule.getMolecularFormula().formula;
   }
-}
-
-function enumerate(mf: string, options?: SurgeOptions): Promise<Answers> {
-  const formula = normalizeFormula(mf);
-  const flags = buildFlags(formula, options);
-  const key = flags.join(' ');
-
-  const cached = cache.get(key);
-  if (cached) return cached;
-
-  // Anyone may ask about any formula, so the cache is bounded and drops the
-  // entry that has gone unused the longest.
-  if (cache.size >= MAX_CACHED_EXERCISES) {
-    const oldest = cache.keys().next();
-    if (!oldest.done) cache.delete(oldest.value);
-  }
-
-  const pending = enumerateNow(formula, flags);
-  cache.set(key, pending);
-  // A failed enumeration must not be remembered, or the exercise stays broken
-  // until the service restarts.
-  pending.catch(() => cache.delete(key));
-  return pending;
-}
-
-async function enumerateNow(mf: string, flags: string[]): Promise<Answers> {
-  const run = await runSurge(flags, ENUMERATION_TIMEOUT_MS);
-  if (run.timedOut || run.truncated) {
-    throw Object.assign(
-      new Error(`${mf} has too many isomers to be used as an exercise`),
-      { statusCode: 400 },
-    );
-  }
-
-  const answers: ExerciseAnswer[] = [];
-  const byIDCode = new Set<string>();
-  for (const smiles of run.lines) {
-    const idCode = constitutionIDCode(Molecule.fromSmiles(smiles));
-    if (byIDCode.has(idCode)) continue;
-    byIDCode.add(idCode);
-    answers.push({ idCode, smiles });
-    if (answers.length > MAX_ANSWERS) {
-      throw Object.assign(
-        new Error(
-          `${mf} has more than ${MAX_ANSWERS} isomers, which is too many to draw`,
-        ),
-        { statusCode: 400 },
-      );
-    }
-  }
-
-  return { mf, answers, byIDCode };
 }

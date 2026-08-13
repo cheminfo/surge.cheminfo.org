@@ -1,4 +1,4 @@
-import type { ExerciseSet, ExerciseSummary } from '../api/surge.ts';
+import type { ExerciseSet } from '../api/surge.ts';
 import { fetchExerciseSet } from '../api/surge.ts';
 
 import { searchParameter } from './router.ts';
@@ -7,23 +7,39 @@ import { searchParameter } from './router.ts';
 interface RemoteSet {
   title?: string;
   description?: string;
-  exercises: Array<{ mf: string; level?: ExerciseSummary['level'] }>;
+  exercises: Array<{ mf: string }>;
 }
 
 /**
- * Read the set the address asks for: the formulas listed in `mf`, the document
- * hosted at `set`, or the one shipped with the service.
+ * The formulas of the set, in the address. Deliberately not `mf`: that one is
+ * the single formula the generator enumerates, and one name meaning two things
+ * turns a hop from the generator into an exercise set nobody wrote.
+ */
+export const FORMULAS_PARAM = 'formulas';
+
+/**
+ * Read the set the address asks for: the formulas listed in `formulas`, the document
+ * hosted at `set`, or the one shipped with the service. When nothing the
+ * address names can be drawn, the shipped set is loaded instead — a student
+ * sent a link that cannot work is still better off with the course than with
+ * an empty page.
  * @returns The set, with the isomer count of each exercise.
  */
 export async function loadSetFromAddress(): Promise<ExerciseSet> {
   const url = searchParameter('set');
-  return url ? loadRemoteSet(url) : fetchExerciseSet(readFormulas());
+  const asked = url
+    ? await loadRemoteSet(url)
+    : await fetchExerciseSet(readFormulas());
+  if (asked.exercises.length > 0 || (!url && !readFormulas())) return asked;
+
+  const shipped = await fetchExerciseSet();
+  return { ...shipped, skipped: asked.skipped };
 }
 
 function readFormulas(): string[] | undefined {
-  const mf = searchParameter('mf');
-  if (!mf) return undefined;
-  return mf
+  const listed = searchParameter(FORMULAS_PARAM);
+  if (!listed) return undefined;
+  return listed
     .split(',')
     .map((formula) => formula.trim())
     .filter(Boolean);
@@ -47,9 +63,7 @@ async function loadRemoteSet(url: string): Promise<ExerciseSet> {
     id: url,
     title: remote.title ?? counted.title,
     description: remote.description ?? counted.description,
-    exercises: counted.exercises.map((exercise, index) => ({
-      ...exercise,
-      level: remote.exercises[index]?.level ?? exercise.level,
-    })),
+    exercises: counted.exercises,
+    skipped: counted.skipped,
   };
 }

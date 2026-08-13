@@ -1,3 +1,4 @@
+import { httpErrors } from '@fastify/sensible';
 import { Type } from '@sinclair/typebox';
 
 import type { ExerciseSet } from '../exercises/defaultSet.ts';
@@ -6,15 +7,23 @@ import {
   checkStructure,
   getExercise,
   getExerciseAnswers,
+  getProgressHints,
 } from '../exercises/exerciseService.ts';
+import { levelOfCount } from '../exercises/level.ts';
 import { surgeOptionsSchema } from '../schemas/surgeOptions.ts';
 import type { FastifyTyped } from '../types.ts';
 
-const levelSchema = Type.Union([
-  Type.Literal('beginner'),
-  Type.Literal('intermediate'),
-  Type.Literal('advanced'),
-]);
+const levelSchema = Type.Union(
+  [
+    Type.Literal('beginner'),
+    Type.Literal('intermediate'),
+    Type.Literal('advanced'),
+  ],
+  {
+    description:
+      'How hard the exercise is, read off the number of isomers it holds',
+  },
+);
 
 const parametersSchema = Type.Object({
   mf: Type.String({ description: 'Molecular formula of the exercise' }),
@@ -59,6 +68,13 @@ export default async function exerciseRoutes(fastify: FastifyTyped) {
                 count: Type.Integer(),
               }),
             ),
+            skipped: Type.Array(
+              Type.Object({ mf: Type.String(), reason: Type.String() }),
+              {
+                description:
+                  'Formulas of the set that cannot be an exercise, and why',
+              },
+            ),
           }),
         },
       },
@@ -66,14 +82,27 @@ export default async function exerciseRoutes(fastify: FastifyTyped) {
     async (request) => {
       const set = readSet(request.query.mf);
       const exercises = [];
+      const skipped = [];
       for (const exercise of set.exercises) {
-        // One at a time: enumerating a whole set in parallel would take every
-        // slot of the generation queue and answer 503 to everyone else.
-        // eslint-disable-next-line no-await-in-loop -- intentional, see above
-        const { mf, count } = await getExercise(exercise.mf, exercise.options);
-        exercises.push({ mf, count, level: exercise.level ?? 'intermediate' });
+        try {
+          // One at a time: enumerating a whole set in parallel would take every
+          // slot of the generation queue and answer 503 to everyone else.
+          // eslint-disable-next-line no-await-in-loop -- intentional, see above
+          const { mf, count } = await getExercise(
+            exercise.mf,
+            exercise.options,
+          );
+          exercises.push({ mf, count, level: levelOfCount(count) });
+        } catch (error) {
+          // One formula nobody can draw does not make the rest of a teacher's
+          // selection worthless: it drops out, and says so.
+          skipped.push({
+            mf: exercise.mf,
+            reason: error instanceof Error ? error.message : String(error),
+          });
+        }
       }
-      return { ...set, exercises };
+      return { ...set, exercises, skipped };
     },
   );
 
@@ -122,6 +151,56 @@ export default async function exerciseRoutes(fastify: FastifyTyped) {
   );
 
   fastify.post(
+    '/v1/exercises/:mf/hints',
+    {
+      schema: {
+        tags: ['exercises'],
+        summary: 'The whole hint ladder, given what has been found',
+        description:
+          'What the formula says comes first, minus everything the student has drawn every answer of, then the motifs the answers hold compared with the ones the structures already found hold. A motif that was never drawn is reported before one that was only half explored, so the service can advise without holding any state about the student.',
+        params: parametersSchema,
+        querystring: surgeOptionsSchema,
+        body: Type.Object({
+          found: Type.Array(
+            Type.String({
+              description: 'Canonical idCode of a structure already found',
+            }),
+            { default: [] },
+          ),
+        }),
+        response: {
+          200: Type.Object({
+            mf: Type.String(),
+            hints: Type.Array(
+              Type.Object({
+                id: Type.String({
+                  description: 'Fragment the hint is about, empty when none',
+                }),
+                kind: Type.Union([
+                  Type.Literal('general'),
+                  Type.Literal('missing'),
+                  Type.Literal('partial'),
+                  Type.Literal('complete'),
+                ]),
+                text: Type.String(),
+              }),
+            ),
+          }),
+        },
+      },
+    },
+    async (request) => {
+      const { mf } = request.params;
+      const hints = await getProgressHints(
+        mf,
+        request.body.found,
+        request.query,
+      );
+      return { mf, hints };
+    },
+  );
+
+  fastify.post(
     '/v1/exercises/:mf/check',
     {
       schema: {
@@ -162,9 +241,7 @@ function readSet(mf: string | undefined): ExerciseSet {
     .map((formula) => formula.trim())
     .filter(Boolean);
   if (formulas.length === 0) {
-    throw Object.assign(new Error('No molecular formula was given'), {
-      statusCode: 400,
-    });
+    throw httpErrors.badRequest('No molecular formula was given');
   }
   return {
     id: 'custom',

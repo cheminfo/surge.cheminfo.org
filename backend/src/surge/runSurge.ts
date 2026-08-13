@@ -1,5 +1,7 @@
 import { spawn } from 'node:child_process';
 
+import { httpErrors } from '@fastify/sensible';
+
 import { config } from '../config.ts';
 
 import { getExecutable } from './getExecutable.ts';
@@ -47,11 +49,11 @@ function acquire(): Promise<void> {
     return Promise.resolve();
   }
   if (waiting.length >= config.maxQueuedGenerations) {
-    const error = Object.assign(
-      new Error('Too many generations in progress, please retry later'),
-      { statusCode: 503 },
+    return Promise.reject(
+      httpErrors.serviceUnavailable(
+        'Too many generations in progress, please retry later',
+      ),
     );
-    return Promise.reject(error);
   }
   return new Promise((resolve) => {
     waiting.push(resolve);
@@ -103,9 +105,9 @@ function execute(flags: string[], timeoutMs: number): Promise<SurgeRun> {
     // like a formula with no isomer, or every answer becomes a confident zero.
     child.on('error', (error) => {
       reject(
-        Object.assign(new Error(`surge could not be run: ${error.message}`), {
-          statusCode: 503,
-        }),
+        httpErrors.serviceUnavailable(
+          `surge could not be run: ${error.message}`,
+        ),
       );
     });
 

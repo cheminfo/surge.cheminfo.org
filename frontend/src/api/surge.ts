@@ -76,8 +76,14 @@ export type ExerciseLevel = 'beginner' | 'intermediate' | 'advanced';
 
 export interface ExerciseSummary {
   mf: string;
+  /** How hard it is, read off `count` by the service. */
   level: ExerciseLevel;
   count: number;
+}
+
+export interface SkippedExercise {
+  mf: string;
+  reason: string;
 }
 
 export interface ExerciseSet {
@@ -85,6 +91,8 @@ export interface ExerciseSet {
   title: string;
   description: string;
   exercises: ExerciseSummary[];
+  /** Formulas of the set that cannot be an exercise, and why. */
+  skipped: SkippedExercise[];
 }
 
 export interface Exercise {
@@ -103,6 +111,33 @@ export interface CheckResult {
   reason: 'correct' | 'wrong-formula' | 'not-an-isomer';
   idCode: string;
   mf: string;
+}
+
+export interface ProgressHint {
+  /** Fragment the hint is about, empty when it is about the whole exercise. */
+  id: string;
+  kind: 'general' | 'missing' | 'partial' | 'complete';
+  text: string;
+}
+
+export interface Fragment {
+  id: string;
+  label: string;
+  category: string;
+  description: string;
+  /** The queries, as idCodes of an openchemlib fragment. */
+  idCodes: string[];
+  parent?: string;
+  missing: string;
+  partial: string;
+}
+
+export interface FragmentUsage {
+  id: string;
+  /** Isomers of the formula holding the motif. */
+  answers: number;
+  /** One of them, so the page can draw what was matched. */
+  example?: string;
 }
 
 /**
@@ -172,6 +207,51 @@ export async function checkStructure(
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({ idCode }),
   });
+}
+
+/**
+ * Ask what is worth saying next, given what has been found so far. The
+ * service holds no state about the student, so what they found travels with
+ * the question.
+ * @param mf - Molecular formula of the exercise.
+ * @param found - Canonical idCodes of the structures already found.
+ * @returns The hints, most useful first.
+ */
+export async function fetchProgressHints(
+  mf: string,
+  found: string[],
+): Promise<ProgressHint[]> {
+  const data = await request<{ hints: ProgressHint[] }>(
+    `/v1/exercises/${encodeURIComponent(mf)}/hints`,
+    {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ found }),
+    },
+  );
+  return data.hints;
+}
+
+/**
+ * Every motif the service looks for when it advises a student.
+ * @returns The fragment library.
+ */
+export async function fetchFragments(): Promise<Fragment[]> {
+  const data = await request<{ fragments: Fragment[] }>('/v1/fragments');
+  return data.fragments;
+}
+
+/**
+ * How many isomers of a formula hold each motif.
+ * @param mf - Molecular formula to enumerate.
+ * @returns The formula, how many isomers it has, and one entry per motif.
+ */
+export async function fetchFragmentUsage(
+  mf: string,
+): Promise<{ mf: string; count: number; usage: FragmentUsage[] }> {
+  return request(
+    `/v1/fragments/usage?${new URLSearchParams({ mf }).toString()}`,
+  );
 }
 
 /**

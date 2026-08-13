@@ -1,48 +1,79 @@
-import { Button, Callout, Card, H5 } from '@blueprintjs/core';
+import { Button, Callout, Card, H5, Tag } from '@blueprintjs/core';
 import { useSignals } from '@preact/signals-react/runtime';
 
-import { data, progressOf, revealHint } from '../../../state/exercises.ts';
+import type { Hint } from '../../../state/exercises.ts';
+import {
+  data,
+  hintLadder,
+  progressOf,
+  revealHint,
+} from '../../../state/exercises.ts';
 
 /**
- * The hint ladder, revealed one rung at a time.
+ * The hint ladder, revealed one rung at a time. The first rungs are what the
+ * formula alone says; the ones after them come from comparing the answers
+ * with the structures already found, so they change as the student works.
  * @returns The hints panel component.
  */
 export default function HintsPanel() {
   useSignals();
   const exercise = data.current.value;
-  if (!exercise || exercise.hints.length === 0) return null;
+  const hints = hintLadder();
+  if (!exercise || hints.length === 0) return null;
 
   const { hintsRevealed } = progressOf(exercise.mf);
-  const revealed = exercise.hints.slice(0, hintsRevealed);
+  const revealed = hints.slice(0, hintsRevealed);
 
   return (
     <Card>
       <div className="card-header">
         <H5>Hints</H5>
-        <Button
-          size="small"
-          icon="lightbulb"
-          disabled={hintsRevealed >= exercise.hints.length}
-          text={
-            hintsRevealed >= exercise.hints.length
-              ? 'No hint left'
-              : `Reveal hint ${hintsRevealed + 1} of ${exercise.hints.length}`
-          }
-          onClick={revealHint}
-        />
+        {hintsRevealed < hints.length ? (
+          <Button
+            size="small"
+            icon="lightbulb"
+            text={revealed.length === 0 ? 'Reveal a hint' : 'Another hint'}
+            onClick={revealHint}
+          />
+        ) : null}
       </div>
       {revealed.length === 0 ? (
         <p className="muted">
-          Hints go from a general remark to a concrete method. Try without them
-          first.
+          The first hints are about the formula. The ones after them look at
+          what you have already drawn and name what is missing from it.
         </p>
       ) : (
-        revealed.map((hint) => (
-          <Callout key={hint} intent="primary" style={{ marginTop: 8 }}>
-            {hint}
-          </Callout>
-        ))
+        revealed.map((hint) => <HintCallout key={hint.id} hint={hint} />)
       )}
     </Card>
+  );
+}
+
+const KIND_TAG: Record<Hint['kind'], string | null> = {
+  general: null,
+  missing: 'Never drawn',
+  partial: 'Half explored',
+  complete: 'Nothing missing',
+};
+
+const KIND_INTENT: Record<Hint['kind'], 'primary' | 'warning' | 'success'> = {
+  general: 'primary',
+  missing: 'warning',
+  partial: 'primary',
+  complete: 'success',
+};
+
+function HintCallout(props: { hint: Hint }) {
+  const { hint } = props;
+  const tag = KIND_TAG[hint.kind];
+  return (
+    <Callout intent={KIND_INTENT[hint.kind]} style={{ marginTop: 8 }}>
+      {tag ? (
+        <Tag minimal intent={KIND_INTENT[hint.kind]} style={{ marginRight: 6 }}>
+          {tag}
+        </Tag>
+      ) : null}
+      {hint.text}
+    </Callout>
   );
 }

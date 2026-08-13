@@ -2,20 +2,21 @@ import {
   Button,
   Callout,
   Card,
+  Collapse,
   FormGroup,
   H5,
   InputGroup,
-  Switch,
+  Tag,
 } from '@blueprintjs/core';
 import { useSignals } from '@preact/signals-react/runtime';
 import { MF } from 'react-mf';
 
-import {
-  data,
-  preferences,
-  runGeneration,
-  view,
-} from '../../../state/generator.ts';
+import { data, preferences, view } from '../../../state/generator.ts';
+import { activeRestrictionCount } from '../../../state/generatorOptions.ts';
+import { runSearch } from '../../../state/generatorUrl.ts';
+import { isHidden } from '../../../state/shareConfig.ts';
+
+import OptionsPanel from './OptionsPanel.tsx';
 
 const STATUS_MESSAGE = {
   complete: 'Every isomer was enumerated.',
@@ -32,6 +33,8 @@ const STATUS_MESSAGE = {
 export default function FormulaPanel() {
   useSignals();
   const result = data.result.value;
+  const showOptions = view.showOptions.value;
+  const restrictions = activeRestrictionCount.value;
   return (
     <Card>
       <H5>Molecular formula</H5>
@@ -52,41 +55,10 @@ export default function FormulaPanel() {
             preferences.mf.value = value;
           }}
           onKeyDown={(event) => {
-            if (event.key === 'Enter') void runGeneration();
+            if (event.key === 'Enter') void runSearch();
           }}
         />
       </FormGroup>
-      <div className="field-row">
-        <FormGroup label="Limit" helperText="Structures returned">
-          <InputGroup
-            type="number"
-            min={1}
-            value={String(preferences.limit.value)}
-            onValueChange={(value) => {
-              preferences.limit.value = Number(value) || 1;
-            }}
-          />
-        </FormGroup>
-        <FormGroup label="Timeout" helperText="Seconds, at most 30">
-          <InputGroup
-            type="number"
-            min={0.1}
-            max={30}
-            step={1}
-            value={String(preferences.timeout.value)}
-            onValueChange={(value) => {
-              preferences.timeout.value = Number(value) || 2;
-            }}
-          />
-        </FormGroup>
-      </div>
-      <Switch
-        checked={preferences.idCode.value}
-        label="Compute the openchemlib idCode"
-        onChange={(event) => {
-          preferences.idCode.value = event.currentTarget.checked;
-        }}
-      />
       <Button
         fill
         size="large"
@@ -94,7 +66,7 @@ export default function FormulaPanel() {
         icon="search"
         text="Search structural isomers"
         loading={view.isGenerating.value}
-        onClick={() => void runGeneration()}
+        onClick={() => void runSearch()}
       />
 
       {view.error.value ? (
@@ -121,6 +93,39 @@ export default function FormulaPanel() {
           <div>{STATUS_MESSAGE[result.status]}</div>
         </Callout>
       ) : null}
+
+      {result && result.result.length > 0 && !isHidden('lists') ? (
+        <Button
+          fill
+          icon="export"
+          text="Export the structures"
+          style={{ marginTop: 12 }}
+          onClick={() => {
+            view.isExportDialogOpen.value = true;
+          }}
+        />
+      ) : null}
+
+      {isHidden('options') ? null : (
+        <>
+          <div className="options-toggle">
+            <Button
+              variant="minimal"
+              icon={showOptions ? 'chevron-down' : 'chevron-right'}
+              text="Options and restrictions"
+              onClick={() => {
+                view.showOptions.value = !showOptions;
+              }}
+            />
+            {restrictions > 0 ? (
+              <Tag intent="primary">{restrictions}</Tag>
+            ) : null}
+          </div>
+          <Collapse isOpen={showOptions}>
+            <OptionsPanel />
+          </Collapse>
+        </>
+      )}
     </Card>
   );
 }

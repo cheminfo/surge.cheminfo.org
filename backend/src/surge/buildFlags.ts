@@ -1,4 +1,5 @@
 import type { SurgeOptions } from '../schemas/surgeOptions.ts';
+import { RANGE_PATTERN } from '../schemas/surgeOptions.ts';
 
 /** Substructure sets of the `-B` flag, in the order surge numbers them. */
 const SUBSTRUCTURE_FILTERS: ReadonlyArray<keyof SurgeOptions> = [
@@ -22,7 +23,7 @@ const RANGE_FLAGS: ReadonlyArray<[keyof SurgeOptions, string]> = [
   ['limitCarbon6Rings', '-C'],
 ];
 
-const RANGE = /^\d+(?:[:-]\d+)?$/;
+const RANGE = new RegExp(`^${RANGE_PATTERN}$`);
 
 /**
  * Turn the API options into the surge command line. The formula comes last,

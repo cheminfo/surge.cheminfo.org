@@ -1,15 +1,18 @@
 import type { Static } from '@sinclair/typebox';
 import { Type } from '@sinclair/typebox';
 
+/** What a surge range looks like: `3` or `1:3`, `1-3` being accepted too. */
+export const RANGE_PATTERN = String.raw`\d+([:-]\d+)?`;
+
 /**
- * A surge range flag: `3` or `1:3` (`1-3` is accepted too). Empty means the
- * restriction is not applied, so a form can send every field every time.
+ * A surge range flag. Empty means the restriction is not applied, so a form can
+ * send every field every time.
  */
 const range = (description: string) =>
   Type.Optional(
     Type.String({
       description,
-      pattern: String.raw`^(\d+([:-]\d+)?)?$`,
+      pattern: `^(${RANGE_PATTERN})?$`,
       examples: ['0', '1:2'],
     }),
   );
