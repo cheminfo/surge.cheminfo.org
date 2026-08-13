@@ -1,8 +1,8 @@
 cff-version: 1.2.0
-title: 'Webservice allowing to generate structural isomers using surge based on a molecular formula'
-abstract: 'This project is generates a docker image that wraps the surge software (https://github.com/StructureGenerator/surge) to provide a web service allowing to generate structural isomers based on a molecular formula.'
-repository-artifact: https://cheminfo.github.io/surge-docker/
-repository-code: https://github.com/cheminfo/surge-docker
+title: 'Structural isomer generator and exercises, powered by Surge'
+abstract: 'A web service and application wrapping the Surge chemical graph generator (https://github.com/StructureGenerator/surge). It enumerates every constitutional isomer of a molecular formula through a REST API, and turns that enumeration into an exercise: the student draws the isomers and the service grades them.'
+repository-artifact: https://surge.cheminfo.org
+repository-code: https://github.com/cheminfo/surge
 authors:
   - family-names: 'Patiny'
     given-names: 'Luc'
@@ -17,4 +17,5 @@ keywords:
   - Structural isomers generation
   - Molecular formula
   - Web service
+  - Chemistry education
 doi:
