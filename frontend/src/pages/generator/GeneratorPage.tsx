@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 
+import { preferences } from '../../state/generator.ts';
 import { runGeneration } from '../../state/generatorRun.ts';
-import { searchParameter } from '../../state/router.ts';
 import { isHidden } from '../../state/shareConfig.ts';
 
 import ExportDialog from './components/ExportDialog.tsx';
@@ -17,9 +17,10 @@ import ResultsPanel from './components/ResultsPanel.tsx';
  * @returns The generator page component.
  */
 export default function GeneratorPage() {
-  // A link that names a formula is a search, not a form to fill in again.
+  // A formula is a search, not a form to fill in again — whether a link named
+  // it or the browser remembers it from the last visit.
   useEffect(() => {
-    if (searchParameter('mf')) void runGeneration();
+    if (preferences.mf.peek()) void runGeneration();
   }, []);
 
   return (
