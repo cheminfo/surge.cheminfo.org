@@ -71,6 +71,15 @@ GET  /v1/fragments/usage    ?mf   how many isomers hold each motif
 `buildApp()` deliberately does not call `ready()`, so a test can still add a
 route to the instance it gets back.
 
+**Who visits is measured by the deployment, never by the code.**
+`TRACKING_SCRIPT` carries the analytics provider's `<script>` tag as written,
+and `utils/injectTrackingScript.ts` is the only thing that ever puts HTML in a
+page: the index is read once, the tag is placed at the end of its `<head>`, and
+that string answers `/`, `/index.html` and every address the frontend routes
+itself — so a page reached through a teacher's link is counted like the root.
+The name of a provider appears nowhere in the source, and a run that sets
+nothing loads nothing.
+
 The service holds no state about a student. An exercise set is described by the
 address (`mf`, or `set` pointing at a JSON document a teacher hosts), and what
 was found lives in the browser under `surge:exercises:v1`, keyed by formula

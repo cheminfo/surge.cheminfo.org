@@ -21,6 +21,11 @@ export const config = {
   trustProxy: parseTrustProxy(env.TRUST_PROXY),
   /** Explicit path to the surge executable; otherwise it is looked up. */
   surgePath: env.SURGE_PATH,
+  /**
+   * The analytics provider's `<script>` tag, put into every page the service
+   * serves. Unset, nothing is loaded and nothing is measured.
+   */
+  trackingScript: env.TRACKING_SCRIPT,
   /** How many surge processes may run at the same time. */
   maxParallelGenerations: integer('MAX_PARALLEL_GENERATIONS', 4),
   /** How many requests may wait for a free slot before the API answers 503. */

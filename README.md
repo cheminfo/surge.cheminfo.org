@@ -216,6 +216,14 @@ Behind a proxy, name it in `TRUST_PROXY` or every request is logged as coming
 from the proxy. Never set `TRUST_PROXY=true` on a port that is reachable
 directly.
 
+### Audience
+
+`TRACKING_SCRIPT` holds the snippet the analytics provider hands out, whole. The
+service puts it at the end of the `<head>` of the page, and since every address
+the frontend routes itself is served that same page, a visitor is counted
+wherever they arrived. A `npm run dev` run — where Vite serves the frontend —
+loads nothing, so development never reaches the counter.
+
 ### Environment
 
 Every variable is documented in [.env.example](.env.example); only `PORT` has
@@ -226,6 +234,7 @@ to be set.
 | `PORT`                     | `31228`    | Port the service listens on; the Vite dev server takes `PORT + 1`.                                                         |
 | `HOST`                     | `0.0.0.0`  | Address it binds to.                                                                                                       |
 | `TRUST_PROXY`              | unset      | Which proxies may set `X-Forwarded-For`. Unset means: believe nobody.                                                      |
+| `TRACKING_SCRIPT`          | unset      | The analytics `<script>` tag, put at the end of the `<head>` of every page served. Unset, nothing is loaded.               |
 | `SURGE_PATH`               | unset      | Path to the executable; otherwise `bin/surge`, then the PATH.                                                              |
 | `MAX_PARALLEL_GENERATIONS` | `4`        | Surge processes running at the same time.                                                                                  |
 | `MAX_QUEUED_GENERATIONS`   | `32`       | Requests that may wait for a slot before the API answers 503.                                                              |

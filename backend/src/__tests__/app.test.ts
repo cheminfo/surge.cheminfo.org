@@ -1,8 +1,14 @@
+import { join } from 'node:path';
+
 import { Molecule } from 'openchemlib';
 import { afterAll, beforeAll, expect, test } from 'vitest';
 
 import { buildApp } from '../app.ts';
 import type { FastifyTyped } from '../types.ts';
+
+const FRONTEND_ROOT = join(import.meta.dirname, 'data/frontend');
+const TRACKING_SCRIPT =
+  '<script defer src="https://analytics.example.org/script.js" data-website-id="00000000-0000-0000-0000-000000000000"></script>';
 
 let app: FastifyTyped;
 
@@ -139,6 +145,46 @@ test('an unknown API address is a 404, not the frontend', async () => {
   const response = await app.inject({ method: 'GET', url: '/v1/nope' });
 
   expect(response.statusCode).toBe(404);
+});
+
+test('every address the frontend routes carries the tracking snippet', async () => {
+  const tracked = await buildApp({
+    frontendRoot: FRONTEND_ROOT,
+    trackingScript: TRACKING_SCRIPT,
+  });
+
+  for (const url of ['/', '/index.html', '/exercises?formulas=C4H10O']) {
+    // eslint-disable-next-line no-await-in-loop -- one instance, one address at a time
+    const response = await tracked.inject({ method: 'GET', url });
+
+    expect(response.statusCode).toBe(200);
+    expect(response.headers['content-type']).toContain('text/html');
+    expect(response.body).toContain(TRACKING_SCRIPT);
+    expect(response.body.indexOf(TRACKING_SCRIPT)).toBeLessThan(
+      response.body.indexOf('</head>'),
+    );
+  }
+
+  const asset = await tracked.inject({
+    method: 'GET',
+    url: '/assets/app.js',
+  });
+  expect(asset.statusCode).toBe(200);
+  expect(asset.body).toBe("globalThis.surge = 'built';\n");
+
+  await tracked.close();
+});
+
+test('a service that tracks nothing serves the page as it was built', async () => {
+  const plain = await buildApp({ frontendRoot: FRONTEND_ROOT });
+
+  const response = await plain.inject({ method: 'GET', url: '/' });
+
+  expect(response.statusCode).toBe(200);
+  expect(response.body).not.toContain('<script');
+  expect(response.body).toContain('<div id="root"></div>');
+
+  await plain.close();
 });
 
 test('only the named proxy may say who the client is', async () => {

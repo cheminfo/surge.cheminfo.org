@@ -1,4 +1,4 @@
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import fastifyCors from '@fastify/cors';
@@ -7,6 +7,7 @@ import fastifyStatic from '@fastify/static';
 import fastifySwagger from '@fastify/swagger';
 import fastifySwaggerUi from '@fastify/swagger-ui';
 import type { TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
+import type { FastifyReply } from 'fastify';
 import Fastify from 'fastify';
 
 import { config } from './config.ts';
@@ -15,6 +16,7 @@ import fragmentRoutes from './routes/fragments.ts';
 import generateRoutes from './routes/generate.ts';
 import healthRoutes from './routes/health.ts';
 import type { FastifyTyped } from './types.ts';
+import { injectTrackingScript } from './utils/injectTrackingScript.ts';
 
 export interface BuildAppOptions {
   /**
@@ -27,6 +29,16 @@ export interface BuildAppOptions {
    * @default false
    */
   logger?: boolean;
+  /**
+   * The analytics provider's `<script>` tag, put into every page served.
+   * @default read from TRACKING_SCRIPT
+   */
+  trackingScript?: string;
+  /**
+   * Where the built frontend is.
+   * @default the frontend/dist of this checkout
+   */
+  frontendRoot?: string;
 }
 
 /**
@@ -76,7 +88,11 @@ export async function buildApp(
   await fastify.register(exerciseRoutes);
   await fastify.register(fragmentRoutes);
 
-  registerFrontend(fastify);
+  registerFrontend(
+    fastify,
+    options.frontendRoot ?? join(import.meta.dirname, '../../frontend/dist'),
+    options.trackingScript ?? config.trackingScript,
+  );
 
   // The instance is deliberately left un-readied, so a caller — a test, or a
   // future plugin — can still add to it. `listen` and `inject` both ready it.
@@ -88,20 +104,39 @@ export async function buildApp(
  * index so a link a teacher handed out loads. Without a build — a plain
  * `npm run dev`, where Vite serves the frontend — the root shows the API
  * documentation instead.
+ *
+ * The index is read once and served from memory, so the operator's tracking
+ * snippet is in it whichever address the visitor arrived at: a page the
+ * frontend routes itself is the same page as the root, and it must be counted
+ * the same way.
  * @param fastify - Instance to register on.
+ * @param root - Where the built frontend is.
+ * @param trackingScript - The analytics provider's tag, when there is one.
  */
-function registerFrontend(fastify: FastifyTyped): void {
-  const root = join(import.meta.dirname, '../../frontend/dist');
+function registerFrontend(
+  fastify: FastifyTyped,
+  root: string,
+  trackingScript?: string,
+): void {
   if (!existsSync(root)) {
     fastify.get('/', (_request, reply) => reply.redirect('/docs'));
     return;
   }
 
-  void fastify.register(fastifyStatic, { root });
+  const index = injectTrackingScript(
+    readFileSync(join(root, 'index.html'), 'utf8'),
+    trackingScript,
+  );
+  const sendIndex = (_request: unknown, reply: FastifyReply) =>
+    reply.type('text/html; charset=utf-8').send(index);
+
+  void fastify.register(fastifyStatic, { root, index: false });
+  fastify.get('/', sendIndex);
+  fastify.get('/index.html', sendIndex);
   fastify.setNotFoundHandler((request, reply) => {
     if (request.method !== 'GET' || request.url.startsWith('/v1/')) {
       return reply.notFound();
     }
-    return reply.sendFile('index.html');
+    return sendIndex(request, reply);
   });
 }
