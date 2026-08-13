@@ -1,51 +1,48 @@
 {
   "name": "surge",
   "version": "1.2.1",
-  "description": "surge web service",
-  "private": true,
+  "description": "Structural isomer generator and exercises, powered by Surge",
   "type": "module",
-  "scripts": {
-    "dev": "DEBUG=generate node --watch src/index.js",
-    "eslint": "eslint src",
-    "eslint-fix": "npm run eslint -- --fix",
-    "prettier": "prettier --check src",
-    "prettier-write": "prettier --write src",
-    "start": "DEBUG=generate node src/index.js",
-    "test": "npm run test-only && npm run eslint && npm run prettier",
-    "test-only": "vitest run --globals --coverage"
-  },
+  "private": true,
+  "homepage": "https://github.com/cheminfo/surge#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/cheminfo/surge.git"
   },
-  "keywords": [],
-  "author": "Luc Patiny",
-  "license": "MIT",
   "bugs": {
     "url": "https://github.com/cheminfo/surge/issues"
   },
-  "homepage": "https://github.com/cheminfo/surge#readme",
-  "dependencies": {
-    "@fastify/cors": "^11.2.0",
-    "@fastify/multipart": "^10.0.0",
-    "@fastify/sensible": "^6.0.4",
-    "@fastify/static": "9.1.0",
-    "@fastify/swagger": "^9.7.0",
-    "@fastify/swagger-ui": "^5.2.5",
-    "fastify": "^5.8.5",
-    "mf-parser": "^3.9.0",
-    "openchemlib": "^9.22.0"
+  "license": "MIT",
+  "author": "Luc Patiny",
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "build-frontend": "npm run build -w frontend",
+    "check-types": "npm run check-types -w backend && npm run check-types -w frontend",
+    "dev": "lsof -ti:31228,31229 | xargs kill -9 2>/dev/null; concurrently --kill-others --kill-others-on-fail \"npm run dev -w backend\" \"npm run dev -w frontend\"",
+    "eslint": "eslint .",
+    "eslint-fix": "eslint . --fix",
+    "install-surge": "node scripts/install-surge.mjs",
+    "prettier": "prettier --check .",
+    "prettier-write": "prettier --write .",
+    "test": "npm run test-only && npm run check-types && npm run eslint && npm run prettier",
+    "test-e2e": "npm run test-e2e -w frontend",
+    "test-only": "npm run test-only -w backend"
   },
   "overrides": {
-    "@fastify/static": "9.1.0"
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
   },
   "devDependencies": {
-    "@types/node": "^25.6.0",
-    "@vitest/coverage-v8": "^4.1.4",
-    "c8": "^11.0.0",
-    "eslint": "^9.39.1",
-    "eslint-config-cheminfo": "^17.0.0",
-    "prettier": "^3.8.3",
-    "vitest": "^4.1.4"
+    "concurrently": "^10.0.4",
+    "eslint": "^9.39.5",
+    "eslint-config-zakodium": "^20.1.0",
+    "prettier": "^3.9.6",
+    "typescript": "^6.0.3"
+  },
+  "volta": {
+    "node": "24.14.0"
   }
 }
