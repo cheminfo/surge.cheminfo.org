@@ -16,6 +16,7 @@ cheminfo visualizer views for structural isomers, both the generator and the
 | `/`          | The generator: a formula in, every isomer out, with the restrictions surge understands. |
 | `/exercises` | The exercises: draw every isomer of a formula yourself, with hints and a correction.    |
 | `/fragments` | The motifs a hint is built from, and how often each appears in a formula.               |
+| `/news`      | What the service has learnt to do, newest first.                                        |
 | `/docs`      | The API, documented and callable from the page.                                         |
 
 Surge is the only thing that decides what an isomer is: the number to find in

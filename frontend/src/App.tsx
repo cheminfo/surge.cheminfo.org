@@ -7,6 +7,7 @@ import ShareDialog from './components/share/ShareDialog.tsx';
 import ExercisesPage from './pages/exercises/ExercisesPage.tsx';
 import FragmentsPage from './pages/fragments/FragmentsPage.tsx';
 import GeneratorPage from './pages/generator/GeneratorPage.tsx';
+import NewsPage from './pages/news/NewsPage.tsx';
 import { data } from './state/generator.ts';
 import { writeGeneratorAddress } from './state/generatorUrl.ts';
 import type { Page } from './state/router.ts';
@@ -17,6 +18,7 @@ const TABS: Array<{ page: Page; label: string }> = [
   { page: 'generator', label: 'Generator' },
   { page: 'exercises', label: 'Exercises' },
   { page: 'fragments', label: 'Fragments' },
+  { page: 'news', label: 'News' },
 ];
 
 /**
@@ -49,6 +51,7 @@ export default function App() {
 function CurrentPage(props: { page: Page }) {
   if (props.page === 'exercises') return <ExercisesPage />;
   if (props.page === 'fragments') return <FragmentsPage />;
+  if (props.page === 'news') return <NewsPage />;
   return <GeneratorPage />;
 }
 

@@ -2,7 +2,7 @@ import { signal } from '@preact/signals-react';
 
 import { SHARE_PARAM_KEYS } from './shareConfig.ts';
 
-export type Page = 'generator' | 'exercises' | 'fragments';
+export type Page = 'generator' | 'exercises' | 'fragments' | 'news';
 
 /**
  * Where the browser is. Routing is path based, through the History API,
@@ -91,12 +91,14 @@ const PATHS: Record<Page, string> = {
   generator: '/',
   exercises: '/exercises',
   fragments: '/fragments',
+  news: '/news',
 };
 
 function readPage(): Page {
   const { pathname } = globalThis.location;
   if (pathname.startsWith('/exercises')) return 'exercises';
   if (pathname.startsWith('/fragments')) return 'fragments';
+  if (pathname.startsWith('/news')) return 'news';
   return 'generator';
 }
 

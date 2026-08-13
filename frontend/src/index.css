@@ -479,6 +479,29 @@ a:hover {
   gap: 16px;
 }
 
+/* Prose is read, not scanned: the entries stay narrow however wide the page
+   is, and one entry is one card. */
+.news {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 860px;
+}
+
+.news p {
+  margin: 0 0 10px;
+}
+
+.news-summary {
+  font-weight: 600;
+}
+
+.news-tags {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .fragment-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));

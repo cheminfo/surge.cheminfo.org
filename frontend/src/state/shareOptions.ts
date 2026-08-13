@@ -118,4 +118,9 @@ const PAGES: Record<Page, PageShareOptions> = {
     features: [],
     hasExercises: false,
   },
+  news: {
+    title: 'News',
+    features: [],
+    hasExercises: false,
+  },
 };
