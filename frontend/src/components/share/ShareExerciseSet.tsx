@@ -33,6 +33,12 @@ export default function ShareExerciseSet(props: {
   const [gap, setGap] = useState<number | null>(null);
   const listRef = useRef<HTMLUListElement>(null);
   const boxes = useRef<RowBox[]>([]);
+  // What the drop reads. A drop arrives before React has re-rendered the last
+  // dragover, so the state is one move behind at exactly the wrong moment.
+  const dragState = useRef<{ dragged: number | null; gap: number | null }>({
+    dragged: null,
+    gap: null,
+  });
   const [draft, setDraft] = useState('');
   const [error, setError] = useState('');
   const [isChecking, setChecking] = useState(false);
@@ -42,11 +48,12 @@ export default function ShareExerciseSet(props: {
     order,
   );
   const formulas = candidates.map((exercise) => exercise.mf);
+  const chosen = new Set(selected);
 
   function toggle(mf: string, checked: boolean): void {
     onChange(
       formulas.filter((formula) =>
-        formula === mf ? checked : selected.includes(formula),
+        formula === mf ? checked : chosen.has(formula),
       ),
     );
   }
@@ -58,7 +65,7 @@ export default function ShareExerciseSet(props: {
    */
   function arrange(moved: string[]): void {
     setOrder(moved);
-    onChange(moved.filter((formula) => selected.includes(formula)));
+    onChange(moved.filter((formula) => chosen.has(formula)));
   }
 
   /**
@@ -70,10 +77,17 @@ export default function ShareExerciseSet(props: {
   function startDrag(index: number): void {
     const rows = listRef.current?.children ?? [];
     boxes.current = [...rows].map((row) => row.getBoundingClientRect());
+    dragState.current = { dragged: index, gap: null };
     setDragged(index);
   }
 
+  function overGap(gapUnder: number | null): void {
+    dragState.current.gap = gapUnder;
+    setGap(gapUnder);
+  }
+
   function endDrag(): void {
+    dragState.current = { dragged: null, gap: null };
     setDragged(null);
     setGap(null);
   }
@@ -126,15 +140,16 @@ export default function ShareExerciseSet(props: {
         className="share-set"
         ref={listRef}
         onDragOver={(event: DragEvent<HTMLUListElement>) => {
-          if (dragged === null) return;
+          if (dragState.current.dragged === null) return;
           event.preventDefault();
           event.dataTransfer.dropEffect = 'move';
-          setGap(gapAt(boxes.current, event.clientX, event.clientY));
+          overGap(gapAt(boxes.current, event.clientX, event.clientY));
         }}
         onDrop={(event: DragEvent<HTMLUListElement>) => {
           event.preventDefault();
-          if (dragged !== null && gap !== null) {
-            arrange(dropFormula(formulas, dragged, gap));
+          const { dragged: from, gap: to } = dragState.current;
+          if (from !== null && to !== null) {
+            arrange(dropFormula(formulas, from, to));
           }
           endDrag();
         }}
@@ -144,7 +159,7 @@ export default function ShareExerciseSet(props: {
             key={exercise.mf}
             exercise={exercise}
             index={index}
-            isChosen={selected.includes(exercise.mf)}
+            isChosen={chosen.has(exercise.mf)}
             isDragged={dragged === index}
             isDragging={dragged !== null}
             gap={gapOf(gap, index, candidates.length)}

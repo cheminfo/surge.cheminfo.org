@@ -147,6 +147,10 @@ test('a formula lands on the side of the row the bar was drawn on', async ({
 
   const link = page.locator('.code-block pre').first();
   const rows = page.locator('.share-set li');
+  // The dialog scales itself in, so a row measured too early is measured
+  // small, and a point given as a fraction of it lands in the wrong half.
+  await expect(link).toContainText('formulas=C4H10O,C3H8,C2H6');
+  await page.waitForTimeout(400);
   const box = (await rows.nth(1).boundingBox()) as {
     width: number;
     height: number;
