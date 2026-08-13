@@ -1,0 +1,11 @@
+.claude
+.env
+.git
+.github
+bin
+compose*.yaml
+**/coverage
+**/dist
+node_modules
+frontend/playwright-report
+frontend/test-results

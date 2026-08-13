@@ -1,0 +1,33 @@
+# Port-published deployment — publishes PORT on the host (the default mode).
+#
+# Used when COMPOSE_FILE is unset in .env. Run: docker compose up -d
+
+services:
+  surge:
+    # Use the released image by default. To build locally instead, run:
+    #   docker compose up -d --build
+    image: ghcr.io/cheminfo/surge:latest
+    build: .
+    init: true
+    restart: unless-stopped
+    stop_grace_period: 30s
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m
+    env_file: .env
+    mem_limit: 1g
+    cpus: 2
+    pids_limit: 256
+    ulimits:
+      core: 0
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '50m'
+        max-file: '3'
+    ports:
+      - '127.0.0.1:${PORT:-31228}:${PORT:-31228}'

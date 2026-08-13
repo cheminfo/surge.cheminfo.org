@@ -1,0 +1,52 @@
+# Traefik deployment — no port published on the host.
+#
+# Requires an external Docker network named `traefik` hosting the reverse
+# proxy, with a `websecure` entrypoint and a `letsencrypt` cert resolver.
+#
+# Select with COMPOSE_FILE=compose.traefik.yaml in .env, then:
+#   docker compose up -d
+
+services:
+  surge:
+    # Use the released image by default. To build locally instead, run:
+    #   docker compose up -d --build
+    image: ghcr.io/cheminfo/surge:latest
+    build: .
+    init: true
+    restart: unless-stopped
+    stop_grace_period: 30s
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m
+    env_file: .env
+    environment:
+      # Traefik reaches the container over the Docker bridge, so its address
+      # is what X-Forwarded-For must be believed from. Narrow it in .env.
+      TRUST_PROXY: ${TRUST_PROXY:-172.16.0.0/12}
+    mem_limit: 1g
+    cpus: 2
+    pids_limit: 256
+    ulimits:
+      core: 0
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '50m'
+        max-file: '3'
+    networks:
+      - default
+      - traefik
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.surge.rule=Host(`surge.cheminfo.org`)'
+      - 'traefik.http.routers.surge.entrypoints=websecure'
+      - 'traefik.http.routers.surge.tls.certresolver=letsencrypt'
+      - 'traefik.http.services.surge.loadbalancer.server.port=${PORT:-31228}'
+
+networks:
+  traefik:
+    external: true
