@@ -28,8 +28,8 @@ export interface ExerciseSet {
  * order. Its duplicate C8H18 entry is left out.
  */
 export const DEFAULT_EXERCISE_SET: ExerciseSet = {
-  id: 'structural-isomers',
-  title: 'Structural isomers',
+  id: 'constitutional-isomers',
+  title: 'Constitutional isomers',
   description:
     'Draw every constitutional isomer of the given molecular formula. Stereochemistry is not taken into account.',
   exercises: [

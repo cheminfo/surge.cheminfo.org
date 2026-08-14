@@ -15,7 +15,7 @@ import InstructionsPanel from './components/InstructionsPanel.tsx';
 import { setDrawingAnchor } from './drawingAnchor.ts';
 
 /**
- * Find every structural isomer of a formula yourself.
+ * Find every constitutional isomer of a formula yourself.
  * @returns The exercises page component.
  */
 export default function ExercisesPage() {

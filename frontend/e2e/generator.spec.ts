@@ -45,7 +45,9 @@ test('generates the seven isomers of C4H10O', async ({ page }) => {
 
   const formula = page.getByRole('textbox').first();
   await formula.fill('C4H10O');
-  await page.getByRole('button', { name: 'Search structural isomers' }).click();
+  await page
+    .getByRole('button', { name: 'Search constitutional isomers' })
+    .click();
 
   await expect(page.getByText('— 7 isomers')).toBeVisible();
   await expect(page.getByText('Every isomer was enumerated.')).toBeVisible();
@@ -59,7 +61,9 @@ test('the export dialog hands the results out in every format', async ({
   await page.goto('/');
 
   await page.getByRole('textbox').first().fill('C4H10O');
-  await page.getByRole('button', { name: 'Search structural isomers' }).click();
+  await page
+    .getByRole('button', { name: 'Search constitutional isomers' })
+    .click();
   await expect(page.getByText('— 7 isomers')).toBeVisible();
 
   await page.getByRole('button', { name: 'Export the structures' }).click();
@@ -90,7 +94,9 @@ test('a formula surge cannot use is reported instead of failing silently', async
   await page.goto('/');
 
   await page.getByRole('textbox').first().fill('C4H10Fe');
-  await page.getByRole('button', { name: 'Search structural isomers' }).click();
+  await page
+    .getByRole('button', { name: 'Search constitutional isomers' })
+    .click();
 
   await expect(
     page.getByText('"C4H10Fe" is not a formula surge can enumerate'),
@@ -101,7 +107,9 @@ test('a restriction narrows the result', async ({ page }) => {
   await page.goto('/');
 
   await page.getByRole('textbox').first().fill('C5H10');
-  await page.getByRole('button', { name: 'Search structural isomers' }).click();
+  await page
+    .getByRole('button', { name: 'Search constitutional isomers' })
+    .click();
   await expect(page.getByText('— 10 isomers')).toBeVisible();
 
   // Everything but the formula starts folded away.
@@ -114,7 +122,9 @@ test('a restriction narrows the result', async ({ page }) => {
   await page.getByPlaceholder('max or min:max').nth(1).fill('0');
   await page.getByPlaceholder('max or min:max').nth(2).fill('0');
   await page.getByPlaceholder('max or min:max').nth(3).fill('0');
-  await page.getByRole('button', { name: 'Search structural isomers' }).click();
+  await page
+    .getByRole('button', { name: 'Search constitutional isomers' })
+    .click();
 
   // Only the five acyclic pentenes are left.
   await expect(page.getByText('— 5 isomers')).toBeVisible();
@@ -126,7 +136,9 @@ test('a substructure drawn in the dialog filters the result and comes back with 
   await page.goto('/');
 
   await page.getByRole('textbox').first().fill('C2H6O');
-  await page.getByRole('button', { name: 'Search structural isomers' }).click();
+  await page
+    .getByRole('button', { name: 'Search constitutional isomers' })
+    .click();
   await expect(page.locator('.structure-cell')).toHaveCount(2);
 
   await page.getByRole('button', { name: 'Options and restrictions' }).click();

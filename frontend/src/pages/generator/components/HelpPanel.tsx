@@ -9,7 +9,7 @@ export default function HelpPanel() {
     <Card>
       <H5>About</H5>
       <p>
-        Every structural isomer of a molecular formula is generated, so the
+        Every constitutional isomer of a molecular formula is generated, so the
         number grows very quickly: past a certain size the enumeration cannot
         finish, and the answer says so instead of pretending to be complete.
       </p>

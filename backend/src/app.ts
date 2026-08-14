@@ -61,7 +61,7 @@ export async function buildApp(
   await fastify.register(fastifySwagger, {
     openapi: {
       info: {
-        title: 'Surge — structural isomer generator',
+        title: 'Surge — constitutional isomer generator',
         description:
           'Generate every constitutional isomer of a molecular formula, and grade the structures a student draws against them.',
         version: '1.0.0',

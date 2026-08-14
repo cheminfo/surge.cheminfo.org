@@ -1,7 +1,7 @@
 {
   "name": "surge-frontend",
   "version": "0.0.0",
-  "description": "React frontend for the surge structural isomer service",
+  "description": "React frontend for the surge constitutional isomer service",
   "private": true,
   "type": "module",
   "scripts": {

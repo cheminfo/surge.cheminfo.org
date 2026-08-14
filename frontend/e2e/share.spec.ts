@@ -60,7 +60,9 @@ test('the search a visitor runs ends up in the address, and in the shared link',
   await page.goto('/');
 
   await page.getByRole('textbox').first().fill('C3H8O');
-  await page.getByRole('button', { name: 'Search structural isomers' }).click();
+  await page
+    .getByRole('button', { name: 'Search constitutional isomers' })
+    .click();
   await expect(page.getByText('3 isomers', { exact: false })).toBeVisible();
   await expect(page).toHaveURL(/mf=C3H8O/);
 

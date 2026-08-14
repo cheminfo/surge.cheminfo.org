@@ -64,7 +64,7 @@ export default function FormulaPanel() {
         size="large"
         intent="primary"
         icon="search"
-        text="Search structural isomers"
+        text="Search constitutional isomers"
         loading={view.isGenerating.value}
         onClick={() => void runSearch()}
       />

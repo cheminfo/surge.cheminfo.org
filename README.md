@@ -6,7 +6,7 @@ finding them yourself.
 The service is a front end for
 [Surge](https://github.com/StructureGenerator/surge), which it drives from a
 REST API, and a React application built on top of it. It replaces the
-cheminfo visualizer views for structural isomers, both the generator and the
+cheminfo visualizer views for constitutional isomers, both the generator and the
 "Isomères de structure" exercise.
 
 ## What it holds

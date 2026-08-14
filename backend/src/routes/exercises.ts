@@ -245,7 +245,7 @@ function readSet(mf: string | undefined): ExerciseSet {
   }
   return {
     id: 'custom',
-    title: 'Structural isomers',
+    title: 'Constitutional isomers',
     description: DEFAULT_EXERCISE_SET.description,
     exercises: formulas.map((formula) => ({ mf: formula })),
   };

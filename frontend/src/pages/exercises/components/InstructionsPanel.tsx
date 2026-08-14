@@ -79,7 +79,7 @@ function Instructions(props: { description: string | undefined }) {
       className="instructions-callout"
       icon="learning"
       intent="warning"
-      title="Find all structural isomers"
+      title="Find all constitutional isomers"
     >
       <Button
         className="instructions-fold"

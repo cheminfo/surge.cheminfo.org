@@ -65,7 +65,7 @@ function Header(props: { page: Page }) {
       <h1>
         Surge
         <span className="page-header-subtitle">
-          structural isomers of a molecular formula
+          constitutional isomers of a molecular formula
         </span>
       </h1>
       <nav className="page-nav">

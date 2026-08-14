@@ -28,7 +28,7 @@ test('GET /v1/exercises describes the shipped set', async () => {
 
   expect(response.statusCode).toBe(200);
   const body = response.json();
-  expect(body.id).toBe('structural-isomers');
+  expect(body.id).toBe('constitutional-isomers');
   expect(body.exercises).toHaveLength(23);
   expect(body.exercises[0]).toStrictEqual({
     mf: 'C5H12',
