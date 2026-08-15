@@ -1,8 +1,9 @@
-import { Button } from '@blueprintjs/core';
+import { Icon } from '@blueprintjs/core';
 import { useSignals } from '@preact/signals-react/runtime';
 import { useEffect, useState } from 'react';
 
 import { fetchVersion } from './api/surge.ts';
+import { BrandMark, Wordmark } from './components/Brand.tsx';
 import ShareDialog from './components/share/ShareDialog.tsx';
 import ExercisesPage from './pages/exercises/ExercisesPage.tsx';
 import FragmentsPage from './pages/fragments/FragmentsPage.tsx';
@@ -41,10 +42,12 @@ export default function App() {
   }, []);
 
   return (
-    <div className="page">
+    <>
       {isEmbedded() ? null : <Header page={page} />}
-      <CurrentPage page={page} />
-    </div>
+      <div className="page">
+        <CurrentPage page={page} />
+      </div>
+    </>
   );
 }
 
@@ -61,50 +64,62 @@ function Header(props: { page: Page }) {
   const [isSharing, setSharing] = useState(false);
 
   return (
-    <header className="page-header">
-      <h1>
-        Surge
-        <span className="page-header-subtitle">
-          constitutional isomers of a molecular formula
-        </span>
-      </h1>
-      <nav className="page-nav">
-        {TABS.map((tab) => (
-          <button
-            key={tab.page}
-            type="button"
-            className={
-              tab.page === props.page ? 'page-tab page-tab--active' : 'page-tab'
-            }
-            onClick={() => navigate(tab.page)}
-          >
-            {tab.label}
-          </button>
-        ))}
-        <a href="/docs">API</a>
-        <a
-          href="https://github.com/StructureGenerator/surge"
-          target="_blank"
-          rel="noreferrer"
-        >
-          Surge{version ? ` ${version}` : ''}
-        </a>
-        <Button
-          size="small"
-          icon="share"
-          text="Share"
-          title="Share a link to this page, or frame it in your own site"
-          onClick={() => {
-            // The generator writes its search when it runs one; a form left
-            // unsearched would otherwise be shared as the previous result.
-            if (props.page === 'generator') writeGeneratorAddress();
-            setSharing(true);
-          }}
-        />
-      </nav>
+    <>
+      <header className="app-header">
+        <div className="app-header__inner">
+          <a href="/" className="brand" title="surge.cheminfo.org">
+            <BrandMark />
+            <Wordmark />
+          </a>
+          <nav className="page-nav">
+            {TABS.map((tab) => (
+              <button
+                key={tab.page}
+                type="button"
+                className={
+                  tab.page === props.page
+                    ? 'nav-link nav-link--active'
+                    : 'nav-link'
+                }
+                onClick={() => navigate(tab.page)}
+              >
+                {tab.label}
+              </button>
+            ))}
+            <a className="nav-link" href="/docs">
+              API
+            </a>
+            <a
+              className="nav-link"
+              href="https://github.com/StructureGenerator/surge"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Surge{version ? ` ${version}` : ''}
+            </a>
+            <button
+              type="button"
+              className="nav-link"
+              title="Share a link to this page, or frame it in your own site"
+              onClick={() => {
+                // The generator writes its search when it runs one; a form left
+                // unsearched would otherwise be shared as the previous result.
+                if (props.page === 'generator') writeGeneratorAddress();
+                setSharing(true);
+              }}
+            >
+              <Icon icon="share" size={14} />
+              Share
+            </button>
+          </nav>
+        </div>
+      </header>
+      <p className="app-tagline">
+        constitutional isomers of a molecular formula
+      </p>
       {isSharing ? (
         <ShareDialog isOpen onClose={() => setSharing(false)} />
       ) : null}
-    </header>
+    </>
   );
 }
