@@ -74,6 +74,9 @@ a:hover {
 
 .page {
   max-width: 1600px;
+  /* The page owns the screen it opens on, so the family links below it are
+     always reached by scrolling, however short the page is. */
+  min-height: calc(100dvh - var(--header-height));
   margin: 0 auto;
   padding: 16px 24px;
 }
