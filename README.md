@@ -190,29 +190,39 @@ Three modes, selected by `COMPOSE_FILE` in `.env`:
 | `compose.traefik.yaml`     | behind Traefik on `surge.cheminfo.org`        |
 | `compose.cloudflared.yaml` | behind a Cloudflare Tunnel, no published port |
 
-One image serves the built page, surge included: there is no service behind it
-to reach. Nothing is written to disk, so the container runs read-only with
-every capability dropped.
+One image serves the built pages, surge included: there is no service behind it
+to reach. The container runs read-only with every capability dropped; the pages
+it hands out are laid onto a tmpfs at startup, which is the only writable place
+in it.
+
+Never deploy by hand with `git pull && docker compose up -d --build`: the build
+overwrites the running tag in place while `git pull` moves the source under it,
+so there is nothing left to roll back to. Deployment is the global deploy script
+installed on the server, which is why every compose file resolves
+`${IMAGE_NAME}:${IMAGE_TAG}` and why `.deploy` is gitignored.
 
 ### Audience
 
-`TRACKING_SCRIPT` holds the snippet the analytics provider hands out, whole. It
-is put at the end of the `<head>` of the page that is served, and since every
-address the page routes itself is that same page, a visitor is counted wherever
-they arrived. A `npm run dev` run — where Vite serves the page — loads nothing,
-so development never reaches the counter.
+`TRACKING_SCRIPT` holds the snippet the analytics provider hands out, whole. The
+build writes one file per address so each page is titled and described as
+itself, and the container puts the snippet at the end of the `<head>` of every
+one of them at startup — so a visitor is counted wherever they arrived. A
+`npm run dev` run — where Vite serves the page — loads nothing, so development
+never reaches the counter.
 
 ### Environment
 
 Every variable is documented in [.env.example](.env.example); only `PORT` has
 to be set.
 
-| Variable          | Default | What it does                                                                                               |
-| ----------------- | ------- | ---------------------------------------------------------------------------------------------------------- |
-| `PORT`            | `31228` | Port the page is served on; the Vite dev server takes `PORT + 1`.                                          |
-| `TRACKING_SCRIPT` | unset   | The analytics `<script>` tag, put at the end of the `<head>` of the page served. Unset, nothing is loaded. |
-| `COMPOSE_FILE`    | unset   | Which deployment mode `docker compose` uses.                                                               |
-| `TUNNEL_TOKEN`    | unset   | Cloudflare Tunnel token, for that mode only.                                                               |
+| Variable          | Default                               | What it does                                                                                                 |
+| ----------------- | ------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `PORT`            | `31228`                               | Port the page is served on; the Vite dev server takes `PORT + 1`.                                            |
+| `TRACKING_SCRIPT` | unset                                 | The analytics `<script>` tag, put at the end of the `<head>` of every page served. Unset, nothing is loaded. |
+| `COMPOSE_FILE`    | unset                                 | Which deployment mode `docker compose` uses.                                                                 |
+| `IMAGE_NAME`      | `ghcr.io/cheminfo/surge.cheminfo.org` | Image every compose file runs.                                                                               |
+| `IMAGE_TAG`       | `latest`                              | Rewritten by the server's deploy script on each deploy and rollback — never edit by hand.                    |
+| `TUNNEL_TOKEN`    | unset                                 | Cloudflare Tunnel token, for that mode only.                                                                 |
 
 Released versions and what changed are in [CHANGELOG.md](CHANGELOG.md).
 

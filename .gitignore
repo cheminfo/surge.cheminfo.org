@@ -16,6 +16,9 @@ npm-debug.log*
 # Local environment
 .env
 
+# State the server's deploy script keeps inside the checkout it deploys.
+.deploy
+
 # Playwright
 playwright-report
 test-results

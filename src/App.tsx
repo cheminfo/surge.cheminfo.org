@@ -1,7 +1,7 @@
 import { Icon } from '@blueprintjs/core';
 import { useSignals } from '@preact/signals-react/runtime';
 import { useEffect, useState } from 'react';
-import { CiteButton, EcosystemButton } from 'react-cheminfo/ui';
+import { CiteButton, EcosystemButton, EcosystemLinks } from 'react-cheminfo/ui';
 
 import { fetchVersion } from './api/surge.ts';
 import { BrandMark, Wordmark } from './components/Brand.tsx';
@@ -50,6 +50,13 @@ export default function App() {
       <div className="page">
         <CurrentPage page={page} />
       </div>
+      {isEmbedded() ? null : (
+        <footer className="app-footer no-print">
+          <div className="app-footer__inner">
+            <EcosystemLinks currentSiteId="surge" />
+          </div>
+        </footer>
+      )}
     </>
   );
 }

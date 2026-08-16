@@ -20,13 +20,16 @@ services:
       - no-new-privileges:true
     cap_drop:
       - ALL
+    # The pages served are written here at startup, so the analytics snippet can
+    # go in them while the image filesystem stays read-only.
     tmpfs:
-      - /tmp:rw,noexec,nosuid,size=64m
-    env_file: .env
+      - /public:rw,noexec,nosuid,size=128m
     environment:
-      # Traefik reaches the container over the Docker bridge, so its address
-      # is what X-Forwarded-For must be believed from. Narrow it in .env.
-      TRUST_PROXY: ${TRUST_PROXY:-172.16.0.0/12}
+      # Read from .env when there is one, defaulted here so a bare checkout
+      # with no .env at all still starts. An empty value means "not set" to
+      # the entrypoint: nothing is loaded.
+      SERVER_PORT: ${PORT:-31228}
+      TRACKING_SCRIPT: ${TRACKING_SCRIPT:-}
     mem_limit: 1g
     cpus: 2
     pids_limit: 256
@@ -38,10 +41,10 @@ services:
         max-size: '50m'
         max-file: '3'
     networks:
-      - default
       - traefik
     labels:
       - 'traefik.enable=true'
+      - 'traefik.docker.network=traefik'
       - 'traefik.http.routers.surge.rule=Host(`surge.cheminfo.org`)'
       - 'traefik.http.routers.surge.entrypoints=websecure'
       - 'traefik.http.routers.surge.tls.certresolver=letsencrypt'

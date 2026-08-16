@@ -1,8 +1,11 @@
 import { signal } from '@preact/signals-react';
 
+import type { Page } from './pages.ts';
+import { PAGE_PATHS, readPageOf } from './pages.ts';
 import { SHARE_PARAM_KEYS } from './shareConfig.ts';
 
-export type Page = 'generator' | 'exercises' | 'fragments' | 'news';
+export type { Page } from './pages.ts';
+export { PAGE_PATHS, readPageOf } from './pages.ts';
 
 /**
  * Where the browser is. Routing is path based, through the History API,
@@ -58,7 +61,7 @@ export function navigate(
     }
   }
   const query = search.toString();
-  const path = PATHS[page];
+  const path = PAGE_PATHS[page];
   const url = query ? `${path}?${query}` : path;
   if (options.replace) {
     globalThis.history.replaceState(null, '', url);
@@ -86,20 +89,8 @@ function keptParameters(page: Page): URLSearchParams {
   return kept;
 }
 
-/** Where each page lives, the generator being the root. */
-const PATHS: Record<Page, string> = {
-  generator: '/',
-  exercises: '/exercises',
-  fragments: '/fragments',
-  news: '/news',
-};
-
 function readPage(): Page {
-  const { pathname } = globalThis.location;
-  if (pathname.startsWith('/exercises')) return 'exercises';
-  if (pathname.startsWith('/fragments')) return 'fragments';
-  if (pathname.startsWith('/news')) return 'news';
-  return 'generator';
+  return readPageOf(globalThis.location.pathname);
 }
 
 globalThis.addEventListener('popstate', () => {

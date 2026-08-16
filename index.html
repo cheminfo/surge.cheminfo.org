@@ -3,7 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Surge — constitutional isomers</title>
+    <!-- The title, the description, the canonical address and the social card
+         are written per page by `scripts/prerender.js`; these are what the
+         build carries before it runs. -->
+    <title>Every constitutional isomer of a molecular formula</title>
     <!-- The same geometry `src/components/Brand.tsx` draws, written out with
          literal colours because a file served on its own cannot read the page's
          custom properties. Change one and change the other. -->
@@ -11,11 +14,69 @@
     <meta name="theme-color" content="#4338ca" />
     <meta
       name="description"
-      content="Generate every constitutional isomer of a molecular formula with Surge, and practise finding them yourself."
+      content="Type a molecular formula and enumerate every constitutional isomer of it with Surge, running as WebAssembly in your browser — no upload, no queue, and the structures drawn as they arrive."
     />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "surge.cheminfo.org",
+        "url": "https://surge.cheminfo.org/",
+        "applicationCategory": "EducationalApplication",
+        "operatingSystem": "Any",
+        "browserRequirements": "Requires JavaScript",
+        "description": "Enumerate every constitutional isomer of a molecular formula with Surge in the browser, constrain the result with required and forbidden fragments, and practise finding the isomers yourself.",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" },
+        "isAccessibleForFree": true,
+        "publisher": { "@type": "Organization", "name": "cheminfo" }
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
+    <noscript>
+      <h1>surge.cheminfo.org — constitutional isomers</h1>
+      <p>
+        Type a molecular formula and get every constitutional isomer of it,
+        enumerated by Surge running as WebAssembly in your browser — so nothing
+        is uploaded and nothing is queued. The tool therefore needs JavaScript.
+      </p>
+      <ul>
+        <li><a href="/">Generator — every isomer of a formula</a></li>
+        <li>
+          <a href="/exercises">Exercises — find the isomers yourself</a>
+        </li>
+        <li>
+          <a href="/fragments">Fragments — require and forbid substructures</a>
+        </li>
+        <li><a href="/news">News — what changed in Surge</a></li>
+      </ul>
+      <h2>Our other tools</h2>
+      <ul>
+        <li><a href="https://inchi.cheminfo.org/">inchi.cheminfo.org</a></li>
+        <li><a href="https://vcl.cheminfo.org/">vcl.cheminfo.org</a></li>
+        <li><a href="https://smiles.cheminfo.org/">smiles.cheminfo.org</a></li>
+        <li><a href="https://www.chemcalc.org/">www.chemcalc.org</a></li>
+        <li><a href="https://www.nmrium.org/">www.nmrium.org</a></li>
+        <li><a href="https://tex.cheminfo.org/">tex.cheminfo.org</a></li>
+        <li><a href="https://lcao.cheminfo.org/">lcao.cheminfo.org</a></li>
+        <li><a href="https://regexp.cheminfo.org/">regexp.cheminfo.org</a></li>
+        <li><a href="https://pdb.cheminfo.org/">pdb.cheminfo.org</a></li>
+        <li>
+          <a href="https://elucidation.cheminfo.org/"
+            >elucidation.cheminfo.org</a
+          >
+        </li>
+        <li>
+          <a href="https://equilibrium.cheminfo.org/"
+            >equilibrium.cheminfo.org</a
+          >
+        </li>
+        <li>
+          <a href="https://polycarp.cheminfo.org/">polycarp.cheminfo.org</a>
+        </li>
+      </ul>
+    </noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
