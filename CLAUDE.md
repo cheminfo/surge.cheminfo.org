@@ -12,30 +12,27 @@ one.
 
 ## Stack
 
-- **Backend**: Fastify 5 + TypeBox, run directly with
-  `node --experimental-strip-types`. No build step, no database.
-- **Frontend**: React 19 + Vite, `@preact/signals-react` for global state,
-  BlueprintJS for the widgets, `react-ocl` for the editor and the drawings,
-  `react-mf` for every molecular formula on screen.
-- **Ports**: backend `31228`, Vite dev server `31229` (derived from the
-  project creation date, 2023-12-28).
-- One Docker image compiles surge from source, builds the frontend, and serves
-  both.
+- **One page, no service.** React 19 + Vite, `@preact/signals-react` for global
+  state, BlueprintJS for the widgets, `react-ocl` for the editor and the
+  drawings, `react-mf` for every molecular formula on screen, `react-cheminfo`
+  for what the family shares.
+- **Ports**: the page is served on `31228`, the Vite dev server on `31229`
+  (derived from the project creation date, 2023-12-28).
+- One Docker image builds the page and serves it; there is nothing behind it.
 
-## The executable
+## Surge itself
 
-- `surge/getExecutable.ts` looks at `SURGE_PATH`, then `bin/surge`, then the
-  PATH. `bin/` is gitignored: `npm run install-surge` downloads the release
-  binary, and the Docker image compiles one.
-- `surge/runSurge.ts` is the only place a child process is spawned. It is
-  asynchronous, capped by `MAX_PARALLEL_GENERATIONS` with a waiting queue, and
-  kills a run on timeout or once it has written `MAX_OUTPUT_BYTES`.
+- Surge is the `surge-wasm` package: the C program compiled to WebAssembly, so
+  there is no executable to install and no child process to spawn.
+- It runs in `workers/surge.worker.ts`, never on the page's own thread — a
+  formula that takes seconds must not freeze what a student is drawing.
+  `workers/surgeClient.ts` is the only thing that talks to it, and a run nobody
+  is waiting for is thrown away rather than reused.
 - Surge 2.0 **counts by default**: `-S` is what makes it write structures, and
   is always passed. `-R` (one Kekulé structure per aromatic ring) is on unless
   a caller turns it off.
-- Options reach the command line only through `surge/buildFlags.ts`, which
-  validates every range against `^\d+([:-]\d+)?$` — nothing else may build a
-  flag string.
+- Options reach the command line only through `surge-wasm`'s own `buildFlags`,
+  which validates every range — nothing here may build a flag string.
 
 ## Identity of a structure
 
@@ -50,37 +47,34 @@ fixes the case, and refuses any element surge does not know. `Nx`, `Sx`, `Sy`
 and `Px` are surge's names for a higher valence and no formula parser knows
 them, so they are let through untouched.
 
-## API
+## What the page asks the worker
 
-Every route is under `/v1`, carries a TypeBox `schema` with `tags`, `summary`
-and `response`, and shows up at `/docs`.
+`api/surge.ts` is the whole vocabulary, and every call goes through `ask()`:
+generate, an exercise set and its counts, one exercise and its hints, the
+answers, checking a drawn structure, the hints from what was found, the motif
+library and its usage. **There is no HTTP API and no `/v1`**: a request is a
+message to the worker, so nothing a student draws is ever sent anywhere, and
+none of these names may be turned back into a route.
 
-```
-GET  /v1/health
-GET  /v1/generate           ?mf&limit&timeout&idCode&<restrictions>
-POST /v1/generate           the same in a body, for a drawn fragmentCode
-GET  /v1/exercises          ?mf=C4H10O,C5H12   -> the set and its counts
-GET  /v1/exercises/:mf      -> { mf, count, hints }, never the answers
-GET  /v1/exercises/:mf/answers
-POST /v1/exercises/:mf/check  { idCode }
-POST /v1/exercises/:mf/hints  { found: idCode[] } -> what is still missing
-GET  /v1/fragments          the motif library a hint is built from
-GET  /v1/fragments/usage    ?mf   how many isomers hold each motif
-```
-
-`buildApp()` deliberately does not call `ready()`, so a test can still add a
-route to the instance it gets back.
+**A search says how far it is, and can be given up on.** A run has two phases
+and reports both as a `RunProgress`: surge enumerating, then the structures
+being read — parsed, searched for the drawn fragment, identified — which on a
+large formula is the longer of the two and the only one whose end can be
+counted towards. Neither phase can be asked to stop from inside, so cancelling
+is `cancelEverything()`: the thread is ended and every call waiting on it fails
+with a `CancelledError`. Giving up is not a failure, so the page says nothing
+and keeps what was on screen.
 
 **Who visits is measured by the deployment, never by the code.**
 `TRACKING_SCRIPT` carries the analytics provider's `<script>` tag as written,
-and `utils/injectTrackingScript.ts` is the only thing that ever puts HTML in a
-page: the index is read once, the tag is placed at the end of its `<head>`, and
-that string answers `/`, `/index.html` and every address the frontend routes
-itself — so a page reached through a teacher's link is counted like the root.
-The name of a provider appears nowhere in the source, and a run that sets
-nothing loads nothing.
+and it is put at the end of the `<head>` of the served page when the container
+starts — never at build time, so one image serves production, staging and a
+developer's checkout and only the first of them counts anything. The same page
+answers every address the router writes, so a page reached through a teacher's
+link is counted like the root. The name of a provider appears nowhere in the
+source, and a run that sets nothing loads nothing.
 
-The service holds no state about a student. An exercise set is described by the
+Nothing is kept about a student anywhere but their own browser. An exercise set is described by the
 address (`mf`, or `set` pointing at a JSON document a teacher hosts), and what
 was found lives in the browser under `surge:exercises:v1`, keyed by formula
 rather than by set so one formula is one piece of work.
@@ -90,7 +84,12 @@ rather than by set so one formula is one piece of work.
 isomers beginner, up to 15 intermediate, more advanced — so a set a teacher
 named in a link is coloured exactly like the one shipped with the service. A
 hand-written level in a set could only disagree with what surge enumerates,
-which is why neither `defaultSet.ts` nor a hosted document carries one.
+which is why neither `defaultSet.ts` nor a hosted document carries one. That
+same count is the order the shipped set is handed out in: nobody arranged it,
+so `exercises/setSummary.ts` sorts it from the easiest formula to the hardest
+rather than leaving a student to meet 26 isomers before 3. A set named in a
+link is not sorted — its order is the one whoever wrote the link arranged, and
+is the order they meant it to be walked through.
 
 **The results of an exercise are always kept, and always through a binding.**
 `state/progressStore.ts` declares what a place to keep them is — a name, a
@@ -130,9 +129,9 @@ student has drawn _every_ answer of — and the formula's rungs are written
 against it: a student who has every cyclic answer is sent to the multiple bonds
 instead of being told about rings, an element whose families are all exhausted
 is not mentioned at all, and once every motif is complete the formula has
-nothing left to add. So the whole ladder is rebuilt on `POST /hints` from what
-was found; the `hints` of `GET /v1/exercises/:mf` are the ladder an exercise
-opens on, and what the page falls back to when the service cannot be reached.
+nothing left to add. So the whole ladder is rebuilt from what was found every
+time hints are asked for; the `hints` an exercise carries are the ladder it
+opens on, before anything has been drawn.
 
 The motifs live in `chemistry/fragments/`, **as openchemlib idCodes of query
 fragments** — never as SMARTS, never as SMILES. One motif may hold several
@@ -152,7 +151,7 @@ isomers hold each motif.
 
 - Routing is **path based** through the History API — a teacher hands out
   `surge.cheminfo.org/exercises?formulas=…`, and a `#` in there does not survive
-  being pasted around. The backend answers `index.html` for any unknown path.
+  being pasted around. The server answers `index.html` for any unknown path.
 - **Everything a page is set up with lives in the address**, the generator's
   search included (`state/generatorUrl.ts` reads it before the first paint and
   writes it on every run), so a Share button can hand out what is on screen.
@@ -208,12 +207,38 @@ isomers hold each motif.
 - The generator keeps the search on the left and the drawings on the right, and
   a result is meant to be read without scrolling: everything but the formula
   and its button — limit, timeout, restrictions, the substructure filter —
-  lives in a fold, and the filter itself opens a dialog. Taking the result away
+  lives in a fold, and the filter itself opens a dialog. **A filter belongs to
+  the formula it was drawn against**: the fold hides it, so a new formula drops
+  it (`setFormula`) rather than silently rejecting everything the new query
+  finds. A link carrying both is another matter — that one was written on
+  purpose, and is read as it stands. Taking the result away
   is one button under the form, opening a dialog that writes it as SMILES, as
-  idCodes or as an SDF, under a name one chooses. `pages/generator/
-exportResult.ts` owns the three formats: openchemlib draws the molfile and
+  idCodes or as an SDF, under a name one chooses. `generate/
+exportStructures.ts` owns the three formats: openchemlib draws the molfile and
   reads the formula and the weight off it, **`sdf-creator` assembles the
   records** — the `$$$$` and the `>  <field>` blocks are never written by hand.
+  An idCode is read off the SMILES when the search did not ask for one, so
+  nothing has to be enumerated twice to take the results away.
+  **A document is never held whole.** Everything but the SMILES has openchemlib
+  read every structure back — a molfile and invented coordinates each, for an
+  SDF — so writing runs in the worker, a chunk at a time, saying how far it is
+  and stopping when told to; a million records is a wait, and an SDF of them is
+  hundreds of megabytes no string in the page could hold. The pieces go
+  straight to the file the visitor named when the document is too large to keep
+  (`exportWriter.ts`, the browser's file picker) and to a blob one piece at a
+  time otherwise, so an ordinary download still arrives with nothing to answer.
+  The preview is written from the first structures alone and says what the
+  whole would weigh, so looking at a million of them costs what looking at ten
+  does. The clipboard takes one string, so copying is offered up to twenty
+  thousand structures and a file is the way to take more away.
+- **Every isomer is shown, a screenful at a time.** The generator asks for the
+  whole enumeration rather than a page of it, so nothing that was found is
+  hidden behind a number. A drawing costs a molecule parsed and an SVG laid
+  out, which is why `StructureGrid` gives every cell the same size and draws
+  only the rows around the viewport: `useVisibleRows` reads the grid's place on
+  the screen — not a scroll position, since the same grid scrolls in a box of
+  its own on a wide window and with the whole page on a narrow one — and the
+  rows nobody is looking at are the padding above and below.
 - **Nothing is submitted by hand.** The exercise editor watches what is being
   drawn and sends it once it holds the atoms of the formula, so a correct
   structure is added on its own. **An accepted answer stays on the canvas** —
@@ -236,14 +261,20 @@ exportResult.ts` owns the three formats: openchemlib draws the molfile and
   follows the button that ran it and the prose comes last.
 - Every molecular formula on screen goes through `react-mf`, never a raw
   string.
+- **What the family shares is imported, never redrawn here.** The Cite and the
+  Tools entries of the bar are `react-cheminfo`'s, so the paper opens and the
+  ten sites are listed exactly as they are on every other `*.cheminfo.org` —
+  and the work surge asks to be cited for is written down once, in
+  `data/surgePaper.ts`, which the About panel reads the DOI off too. Under
+  1000px the bar has run out of room and every utility gives up its label for
+  its icon (`useCompactHeader`), rather than pushing the pages off the edge.
 - Organise by page under `src/pages/<page>/`; keep every file under 250 lines.
 
 ## Commands
 
 ```sh
 npm install
-npm run install-surge    # bin/surge, for development and CI
-npm run dev              # backend :31228 + frontend :31229
+npm run dev              # the page on :31229
 npm test                 # vitest + check-types + eslint + prettier
-npm run test-e2e         # Playwright, both dev servers started for it
+npm run test-e2e         # Playwright, the dev server started for it
 ```

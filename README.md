@@ -3,10 +3,11 @@
 Generate every constitutional isomer of a molecular formula, and practise
 finding them yourself.
 
-The service is a front end for
-[Surge](https://github.com/StructureGenerator/surge), which it drives from a
-REST API, and a React application built on top of it. It replaces the
-cheminfo visualizer views for constitutional isomers, both the generator and the
+The page is a front end for
+[Surge](https://github.com/StructureGenerator/surge), which it runs itself:
+surge is carried as WebAssembly and enumerates in a worker of the browser, so
+there is no service to call and nothing to install. It replaces the cheminfo
+visualizer views for constitutional isomers, both the generator and the
 "Isomères de structure" exercise.
 
 ## What it holds
@@ -16,8 +17,7 @@ cheminfo visualizer views for constitutional isomers, both the generator and the
 | `/`          | The generator: a formula in, every isomer out, with the restrictions surge understands. |
 | `/exercises` | The exercises: draw every isomer of a formula yourself, with hints and a correction.    |
 | `/fragments` | The motifs a hint is built from, and how often each appears in a formula.               |
-| `/news`      | What the service has learnt to do, newest first.                                        |
-| `/docs`      | The API, documented and callable from the page.                                         |
+| `/news`      | What the tool has learnt to do, newest first.                                           |
 
 Surge is the only thing that decides what an isomer is: the number to find in
 an exercise is enumerated at run time, never hard-coded, so an exercise and
@@ -77,7 +77,7 @@ save:
 | `/exercises?set=https://example.org/isomers.json` | A set the teacher hosts themselves.        |
 | `/exercises?formulas=C4H10O&embed=1`              | The same without the header, to be framed. |
 
-A hosted set is a JSON document. Only `exercises` is required; the service
+A hosted set is a JSON document. Only `exercises` is required; the page
 counts the isomers itself.
 
 ```json
@@ -92,9 +92,9 @@ It is fetched by the browser, so it has to be served with a permissive
 `Access-Control-Allow-Origin`.
 
 The colour of an exercise is its difficulty, and it is never written down
-either: the service reads it off the number of isomers — up to 5 green, up to
+either: it is read off the number of isomers — up to 5 green, up to
 15 orange, more than that red — so a set named in a link is coloured like the
-one shipped with the service.
+one shipped with the tool.
 
 ### Sharing and framing
 
@@ -150,28 +150,15 @@ https://surge.cheminfo.org/exercises?formulas=C5H12,C6H14,C4H10O&embed=1
 ></iframe>
 ```
 
-## API
+## Where the enumeration happens
 
-Every route lives under `/v1` and is documented at `/docs`.
-
-```
-GET  /v1/health                        the service and its surge version
-GET  /v1/generate?mf=C6H10O&limit=100  enumerate isomers
-POST /v1/generate                      the same, parameters in a JSON body
-GET  /v1/exercises                     an exercise set and its counts
-GET  /v1/exercises/:mf                 one exercise: how many to find, hints
-GET  /v1/exercises/:mf/answers         the correction
-POST /v1/exercises/:mf/check           is this drawn structure one of them?
-POST /v1/exercises/:mf/hints           what is missing from what has been found
-GET  /v1/fragments                     the motif library a hint is built from
-GET  /v1/fragments/usage?mf=C4H8O      how many isomers hold each motif
-```
-
-`GET /v1/generate` takes the restrictions surge understands — triple bonds,
-planarity, ring counts, the nine substructure filters — as query parameters;
-`POST` takes the same in a body, which is how a drawn fragment is passed
-without stuffing an idCode into a URL. Aromaticity filtering (surge's `-R`) is
-on by default, so the Kekulé structures of one aromatic ring count once.
+Everything runs in the page. The restrictions surge understands — triple bonds,
+planarity, ring counts, the nine substructure filters — are the options of the
+generator's fold, and they reach surge's own command line unchanged;
+aromaticity filtering (surge's `-R`) is on by default, so the Kekulé structures
+of one aromatic ring count once. The enumeration itself is done in a worker, so
+a formula that takes seconds never freezes what is being drawn, and nothing a
+student types leaves their browser.
 
 ## Local development
 
@@ -179,18 +166,12 @@ on by default, so the Kekulé structures of one aromatic ring count once.
 git clone https://github.com/cheminfo/surge
 cd surge
 npm install
-npm run install-surge   # downloads bin/surge for this machine
-npm run dev             # backend on :31228, frontend on :31229
+npm run dev
 ```
-
-`npm run install-surge` downloads the release binary upstream publishes for
-macOS on Apple silicon and for Linux on x86-64, checksum verified. On any other
-platform, compile surge the way the [Dockerfile](Dockerfile) does and point
-`SURGE_PATH` at the result.
 
 ```sh
 npm test           # unit tests, type-check, eslint, prettier
-npm run test-e2e   # Playwright, against both dev servers
+npm run test-e2e   # Playwright, against the dev server
 ```
 
 ## Deployment
@@ -209,41 +190,29 @@ Three modes, selected by `COMPOSE_FILE` in `.env`:
 | `compose.traefik.yaml`     | behind Traefik on `surge.cheminfo.org`        |
 | `compose.cloudflared.yaml` | behind a Cloudflare Tunnel, no published port |
 
-One image serves the API and the built frontend, and compiles surge from
-source so it runs on any architecture. Nothing is written to disk, so the
-container runs read-only with every capability dropped.
-
-Behind a proxy, name it in `TRUST_PROXY` or every request is logged as coming
-from the proxy. Never set `TRUST_PROXY=true` on a port that is reachable
-directly.
+One image serves the built page, surge included: there is no service behind it
+to reach. Nothing is written to disk, so the container runs read-only with
+every capability dropped.
 
 ### Audience
 
-`TRACKING_SCRIPT` holds the snippet the analytics provider hands out, whole. The
-service puts it at the end of the `<head>` of the page, and since every address
-the frontend routes itself is served that same page, a visitor is counted
-wherever they arrived. A `npm run dev` run — where Vite serves the frontend —
-loads nothing, so development never reaches the counter.
+`TRACKING_SCRIPT` holds the snippet the analytics provider hands out, whole. It
+is put at the end of the `<head>` of the page that is served, and since every
+address the page routes itself is that same page, a visitor is counted wherever
+they arrived. A `npm run dev` run — where Vite serves the page — loads nothing,
+so development never reaches the counter.
 
 ### Environment
 
 Every variable is documented in [.env.example](.env.example); only `PORT` has
 to be set.
 
-| Variable                   | Default    | What it does                                                                                                               |
-| -------------------------- | ---------- | -------------------------------------------------------------------------------------------------------------------------- |
-| `PORT`                     | `31228`    | Port the service listens on; the Vite dev server takes `PORT + 1`.                                                         |
-| `HOST`                     | `0.0.0.0`  | Address it binds to.                                                                                                       |
-| `TRUST_PROXY`              | unset      | Which proxies may set `X-Forwarded-For`. Unset means: believe nobody.                                                      |
-| `TRACKING_SCRIPT`          | unset      | The analytics `<script>` tag, put at the end of the `<head>` of every page served. Unset, nothing is loaded.               |
-| `SURGE_PATH`               | unset      | Path to the executable; otherwise `bin/surge`, then the PATH.                                                              |
-| `MAX_PARALLEL_GENERATIONS` | `4`        | Surge processes running at the same time.                                                                                  |
-| `MAX_QUEUED_GENERATIONS`   | `32`       | Requests that may wait for a slot before the API answers 503.                                                              |
-| `MAX_TIMEOUT_SECONDS`      | `30`       | Largest timeout a caller may ask for.                                                                                      |
-| `MAX_LIMIT`                | `100000`   | Largest number of structures a caller may ask for.                                                                         |
-| `MAX_OUTPUT_BYTES`         | `33554432` | Surge is killed once it has written this much. Raising it needs more container memory: the output is copied several times. |
-| `COMPOSE_FILE`             | unset      | Which deployment mode `docker compose` uses.                                                                               |
-| `TUNNEL_TOKEN`             | unset      | Cloudflare Tunnel token, for that mode only.                                                                               |
+| Variable          | Default | What it does                                                                                               |
+| ----------------- | ------- | ---------------------------------------------------------------------------------------------------------- |
+| `PORT`            | `31228` | Port the page is served on; the Vite dev server takes `PORT + 1`.                                          |
+| `TRACKING_SCRIPT` | unset   | The analytics `<script>` tag, put at the end of the `<head>` of the page served. Unset, nothing is loaded. |
+| `COMPOSE_FILE`    | unset   | Which deployment mode `docker compose` uses.                                                               |
+| `TUNNEL_TOKEN`    | unset   | Cloudflare Tunnel token, for that mode only.                                                               |
 
 Released versions and what changed are in [CHANGELOG.md](CHANGELOG.md).
 

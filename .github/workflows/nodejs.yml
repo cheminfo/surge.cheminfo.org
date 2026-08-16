@@ -13,4 +13,3 @@ jobs:
     with:
       disable-test-package: true
       lint-check-types: true
-      test-setup-command: npm run install-surge

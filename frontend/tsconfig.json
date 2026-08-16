@@ -1,8 +1,0 @@
-{
-  "extends": "@zakodium/tsconfig/jsx",
-  "compilerOptions": {
-    "noEmit": true,
-    "noUncheckedIndexedAccess": true
-  },
-  "include": ["src", "vite*.ts"]
-}
