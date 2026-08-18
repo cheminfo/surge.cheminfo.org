@@ -12,6 +12,16 @@ COPY package.json package-lock.json .npmrc ./
 RUN npm ci
 
 COPY . .
+
+# The address the site names as its own, for the canonical link, the social
+# card and the sitemap. It is NOT where the image is mounted: the build carries
+# no mount at all, so one image serves surge.cheminfo.org and
+# www.cheminfo.org/surge alike and BASE_PATH tells them apart at startup. Pass
+# this only when publishing the tool as a site of its own somewhere else:
+#   docker build --build-arg SITE_URL=https://example.org/surge/ .
+ARG SITE_URL=
+ENV SITE_URL=$SITE_URL
+
 RUN npm run build
 
 # ── Stage 2: production image ────────────────────────────────────────────────

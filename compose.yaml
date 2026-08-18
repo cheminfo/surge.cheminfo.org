@@ -25,6 +25,7 @@ services:
       # with no .env at all still starts. An empty value means "not set" to
       # the entrypoint: nothing is loaded.
       SERVER_PORT: ${PORT:-31228}
+      BASE_PATH: ${BASE_PATH:-/}
       TRACKING_SCRIPT: ${TRACKING_SCRIPT:-}
     mem_limit: 1g
     cpus: 2

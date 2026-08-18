@@ -210,6 +210,44 @@ one of them at startup — so a visitor is counted wherever they arrived. A
 `npm run dev` run — where Vite serves the page — loads nothing, so development
 never reaches the counter.
 
+### Where the site is served
+
+The site does not assume it owns the root of a host, and **the build does not
+decide where it is mounted**. Every asset is written relative, so one image —
+one build, one tag — serves both of these at once:
+
+| Address                           | `BASE_PATH`   |
+| --------------------------------- | ------------- |
+| `https://surge.cheminfo.org/`     | unset, or `/` |
+| `https://www.cheminfo.org/surge/` | `/surge/`     |
+
+`BASE_PATH` is read **when the container starts**: the entrypoint stamps it
+into the `<base>` of every page it serves, and the page reads its own mount
+back off `document.baseURI`. So mounting the tool somewhere else is a line in
+`.env` and a restart — never a rebuild, and never a second image:
+
+```sh
+BASE_PATH=/surge/ docker compose up -d
+```
+
+A shared host strips the prefix before forwarding (Traefik's `StripPrefix`), so
+the container behind it never knows it is mounted.
+
+`SITE_URL` is a different thing and is read **at build time**: it is the
+address the site names as _its own_, for the canonical link, the social card
+and the sitemap. Every deployment claims that one address, so a mirror points a
+crawler back at the original instead of competing with it for one search
+result. Pass it only when publishing the tool as a site of its own elsewhere:
+
+```sh
+SITE_URL=https://example.org/surge/ npm run build
+docker build --build-arg SITE_URL=https://example.org/surge/ .
+```
+
+Note that a crawler only reads `robots.txt` from the root of a host, so a
+deployment mounted under a path is covered by whatever answers that root, not
+by the file the build writes.
+
 ### Environment
 
 Every variable is documented in [.env.example](.env.example); only `PORT` has
@@ -218,6 +256,8 @@ to be set.
 | Variable          | Default                               | What it does                                                                                                 |
 | ----------------- | ------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
 | `PORT`            | `31228`                               | Port the page is served on; the Vite dev server takes `PORT + 1`.                                            |
+| `BASE_PATH`       | `/`                                   | Where this deployment is mounted, read at container start. `/surge/` serves the same image under a path.     |
+| `SITE_URL`        | `https://surge.cheminfo.org/`         | Build time only: the address the site names as its own, for the canonical link, the card and the sitemap.    |
 | `TRACKING_SCRIPT` | unset                                 | The analytics `<script>` tag, put at the end of the `<head>` of every page served. Unset, nothing is loaded. |
 | `COMPOSE_FILE`    | unset                                 | Which deployment mode `docker compose` uses.                                                                 |
 | `IMAGE_NAME`      | `ghcr.io/cheminfo/surge.cheminfo.org` | Image every compose file runs.                                                                               |
@@ -226,11 +266,23 @@ to be set.
 
 Released versions and what changed are in [CHANGELOG.md](CHANGELOG.md).
 
+## How to cite
+
+Two works, and the Cite button in the header hands both over in the style a
+journal asks for — as a citation, as BibTeX or RIS, or as one file a reference
+manager imports.
+
+- **The isomer generator** — every structure this site hands out comes out of
+  surge. McKay, B.D., Yirik, M.A., Steinbeck, C. _Surge: a fast open-source
+  chemical graph generator._ J Cheminform 14, 24 (2022).
+  <https://doi.org/10.1186/s13321-022-00604-9>
+- **Data processing in the browser** — the site itself, which runs the generator
+  in the browser. Patiny, L. _Unlocking the Potential of Browser-Based Scientific
+  Data Analysis: A 20-Year Journey of Expertise._ Chimia 79, 66–69 (2025).
+  <https://doi.org/10.2533/chimia.2025.66>
+
 ## License
 
 [MIT](./LICENSE)
 
 Surge is under its own license: <https://github.com/StructureGenerator/surge>.
-Please cite McKay, B.D., Yirik, M.A., Steinbeck, C. _Surge: a fast open-source
-chemical graph generator._ J Cheminform 14, 24 (2022).
-<https://doi.org/10.1186/s13321-022-00604-9>

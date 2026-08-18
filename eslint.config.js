@@ -1,4 +1,5 @@
 import { defineConfig, globalIgnores } from 'eslint/config';
+import { globals } from 'eslint-config-zakodium';
 import react from 'eslint-config-zakodium/react';
 import ts from 'eslint-config-zakodium/ts';
 import unicorn from 'eslint-config-zakodium/unicorn';
@@ -17,6 +18,12 @@ export default defineConfig(
   ]),
   ts,
   unicorn,
+  {
+    // A build step runs in node, and reads the address of the deployment from
+    // the environment it was started in.
+    files: ['scripts/**'],
+    languageOptions: { globals: { ...globals.nodeBuiltin } },
+  },
   {
     // Driving a page is one thing after another, and a browser test reads
     // better as the sequence it is.

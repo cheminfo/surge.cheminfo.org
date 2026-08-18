@@ -1,7 +1,8 @@
+import { pageMetaFor } from 'react-cheminfo/core';
 import { expect, test } from 'vitest';
 
-import { everyPage, pageMetaFor } from '../pageMeta.ts';
-import { PAGE_PATHS, readPageOf } from '../pages.ts';
+import { PAGE_PATHS, readPageOf } from '../../state/pages.ts';
+import { PAGE_ROUTES } from '../routes.ts';
 
 test('every page is an address of its own, the generator being the home page', () => {
   expect(PAGE_PATHS).toStrictEqual({
@@ -25,12 +26,12 @@ test('an address the site does not know opens the generator', () => {
 });
 
 test('every page is titled and described on its own', () => {
-  const pages = everyPage();
+  const pages = PAGE_ROUTES;
 
   expect(pages).toHaveLength(4);
   expect(new Set(pages.map((page) => page.title)).size).toBe(4);
   expect(new Set(pages.map((page) => page.description)).size).toBe(4);
-  expect(pages.map((page) => page.canonicalPath)).toStrictEqual([
+  expect(pages.map((page) => page.path)).toStrictEqual([
     '/',
     '/exercises',
     '/fragments',
@@ -45,14 +46,14 @@ test('every page is titled and described on its own', () => {
 test('what the page is working on is never a page of its own', () => {
   // A formula, a set of exercises and a share configuration ride in the query;
   // the canonical address is the page holding them.
-  expect(pageMetaFor(readPageOf('/exercises')).canonicalPath).toBe(
+  expect(pageMetaFor(PAGE_ROUTES, '/exercises?formulas=C4H10O').path).toBe(
     '/exercises',
   );
-  expect(pageMetaFor(readPageOf('/')).canonicalPath).toBe('/');
+  expect(pageMetaFor(PAGE_ROUTES, '/?mf=C5H12').path).toBe('/');
 });
 
 test('the generator is described by what somebody would search for', () => {
-  const meta = pageMetaFor('generator');
+  const meta = pageMetaFor(PAGE_ROUTES, '/');
 
   expect(meta.title).toBe('Every constitutional isomer of a molecular formula');
   expect(meta.description).toContain('constitutional isomer');

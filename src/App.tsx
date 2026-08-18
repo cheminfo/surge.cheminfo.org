@@ -1,13 +1,17 @@
 import { Icon } from '@blueprintjs/core';
 import { useSignals } from '@preact/signals-react/runtime';
 import { useEffect, useState } from 'react';
-import { CiteButton, EcosystemButton, EcosystemLinks } from 'react-cheminfo/ui';
+import {
+  CiteButton,
+  EcosystemButton,
+  SiteFooter,
+  SiteHeader,
+  useCompactHeader,
+} from 'react-cheminfo/ui';
 
 import { fetchVersion } from './api/surge.ts';
-import { BrandMark, Wordmark } from './components/Brand.tsx';
 import ShareDialog from './components/share/ShareDialog.tsx';
-import { useCompactHeader } from './components/useCompactHeader.ts';
-import { SURGE_PAPER } from './data/surgePaper.ts';
+import { SURGE_WORKS } from './data/papers.ts';
 import ExercisesPage from './pages/exercises/ExercisesPage.tsx';
 import FragmentsPage from './pages/fragments/FragmentsPage.tsx';
 import GeneratorPage from './pages/generator/GeneratorPage.tsx';
@@ -17,6 +21,7 @@ import { writeGeneratorAddress } from './state/generatorUrl.ts';
 import type { Page } from './state/router.ts';
 import { navigate, route } from './state/router.ts';
 import { isEmbedded } from './state/shareConfig.ts';
+import { withBase } from './state/site.ts';
 
 const TABS: Array<{ page: Page; label: string }> = [
   { page: 'generator', label: 'Generator' },
@@ -50,13 +55,7 @@ export default function App() {
       <div className="page">
         <CurrentPage page={page} />
       </div>
-      {isEmbedded() ? null : (
-        <footer className="app-footer no-print">
-          <div className="app-footer__inner">
-            <EcosystemLinks currentSiteId="surge" />
-          </div>
-        </footer>
-      )}
+      {isEmbedded() ? null : <SiteFooter siteId="surge" />}
     </>
   );
 }
@@ -76,29 +75,17 @@ function Header(props: { page: Page }) {
 
   return (
     <>
-      <header className="app-header">
-        <div className="app-header__inner">
-          <a href="/" className="brand" title="surge.cheminfo.org">
-            <BrandMark />
-            <Wordmark />
-          </a>
-          <nav className="page-nav">
-            {TABS.map((tab) => (
-              <button
-                key={tab.page}
-                type="button"
-                className={
-                  tab.page === props.page
-                    ? 'nav-link nav-link--active'
-                    : 'nav-link'
-                }
-                onClick={() => navigate(tab.page)}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </nav>
-          <div className="app-header-actions">
+      <SiteHeader
+        siteId="surge"
+        homeHref={withBase('/')}
+        activeId={props.page}
+        nav={TABS.map((tab) => ({
+          id: tab.page,
+          label: tab.label,
+          onSelect: () => navigate(tab.page),
+        }))}
+        actions={
+          <>
             <a
               className="nav-link"
               href="https://github.com/StructureGenerator/surge"
@@ -107,7 +94,7 @@ function Header(props: { page: Page }) {
             >
               Surge{version ? ` ${version}` : ''}
             </a>
-            <CiteButton reference={SURGE_PAPER} compact={compact} />
+            <CiteButton works={SURGE_WORKS} compact={compact} />
             <EcosystemButton currentSiteId="surge" compact={compact} />
             <button
               type="button"
@@ -124,9 +111,9 @@ function Header(props: { page: Page }) {
               <Icon icon="share" size={14} />
               {compact ? null : 'Share'}
             </button>
-          </div>
-        </div>
-      </header>
+          </>
+        }
+      />
       <p className="app-tagline">
         constitutional isomers of a molecular formula
       </p>

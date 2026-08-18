@@ -3,6 +3,7 @@ import { signal } from '@preact/signals-react';
 import type { Page } from './pages.ts';
 import { PAGE_PATHS, readPageOf } from './pages.ts';
 import { SHARE_PARAM_KEYS } from './shareConfig.ts';
+import { pathWithoutBase, withBase } from './site.ts';
 
 export type { Page } from './pages.ts';
 export { PAGE_PATHS, readPageOf } from './pages.ts';
@@ -61,7 +62,7 @@ export function navigate(
     }
   }
   const query = search.toString();
-  const path = PAGE_PATHS[page];
+  const path = withBase(PAGE_PATHS[page]);
   const url = query ? `${path}?${query}` : path;
   if (options.replace) {
     globalThis.history.replaceState(null, '', url);
@@ -90,7 +91,7 @@ function keptParameters(page: Page): URLSearchParams {
 }
 
 function readPage(): Page {
-  return readPageOf(globalThis.location.pathname);
+  return readPageOf(pathWithoutBase(globalThis.location.pathname));
 }
 
 globalThis.addEventListener('popstate', () => {

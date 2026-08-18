@@ -262,10 +262,12 @@ exportStructures.ts` owns the three formats: openchemlib draws the molfile and
 - Every molecular formula on screen goes through `react-mf`, never a raw
   string.
 - **What the family shares is imported, never redrawn here.** The Cite and the
-  Tools entries of the bar are `react-cheminfo`'s, so the paper opens and the
-  ten sites are listed exactly as they are on every other `*.cheminfo.org` —
-  and the work surge asks to be cited for is written down once, in
-  `data/surgePaper.ts`, which the About panel reads the DOI off too. Under
+  Tools entries of the bar are `react-cheminfo`'s, so the papers open and the
+  ten sites are listed exactly as they are on every other `*.cheminfo.org`.
+  **Two works are asked for** — the generator that enumerates the isomers, and
+  processing chemical data in the browser, which is what this site is — and both
+  are written down once, in `data/papers.ts`, with the sentence saying what
+  citing each one credits; the About panel reads the same two off it. Under
   1000px the bar has run out of room and every utility gives up its label for
   its icon (`useCompactHeader`), rather than pushing the pages off the edge.
 - Organise by page under `src/pages/<page>/`; keep every file under 250 lines.
