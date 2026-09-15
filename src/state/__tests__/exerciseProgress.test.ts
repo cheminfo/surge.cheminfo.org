@@ -9,9 +9,12 @@ import {
   setProgressStore,
   updateProgress,
 } from '../exerciseProgress.ts';
-import type { ProgressByFormula, ProgressStore } from '../progressStore.ts';
+import type {
+  ProgressByFormula,
+  SurgeProgressStore,
+} from '../progressStore.ts';
 
-function memoryStore(initial: ProgressByFormula = {}): ProgressStore & {
+function memoryStore(initial: ProgressByFormula = {}): SurgeProgressStore & {
   saved: ProgressByFormula[];
 } {
   const saved: ProgressByFormula[] = [];

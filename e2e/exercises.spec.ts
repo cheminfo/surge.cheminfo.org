@@ -9,7 +9,7 @@ import { expect, test } from '@playwright/test';
 async function drawOneBond(page: Page): Promise<void> {
   // The editor draws its toolbar in a first canvas; the drawing area is the
   // last one.
-  const canvas = page.locator('.structure-editor-canvas canvas').last();
+  const canvas = page.locator('.structure-editor canvas').last();
   // The mouse is driven in viewport coordinates, so a canvas below the fold
   // would be dragged across whatever sits at those coordinates instead.
   await canvas.scrollIntoViewIfNeeded();
@@ -29,7 +29,7 @@ async function drawOneBond(page: Page): Promise<void> {
  * @param bonds - How many bonds to draw.
  */
 async function drawChain(page: Page, bonds: number): Promise<void> {
-  const canvas = page.locator('.structure-editor-canvas canvas').last();
+  const canvas = page.locator('.structure-editor canvas').last();
   await canvas.scrollIntoViewIfNeeded();
   const box = await canvas.boundingBox();
   if (!box) throw new Error('the structure editor has no canvas');

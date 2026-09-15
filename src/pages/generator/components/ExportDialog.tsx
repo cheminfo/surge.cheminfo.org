@@ -11,6 +11,7 @@ import {
 } from '@blueprintjs/core';
 import { useSignals } from '@preact/signals-react/runtime';
 import { useMemo, useState } from 'react';
+import { formatBytes, pluralize } from 'react-cheminfo/core';
 
 import type { ExportFormat, GenerateResult } from '../../../api/surge.ts';
 import RunProgressBar from '../../../components/RunProgressBar.tsx';
@@ -124,7 +125,7 @@ function ExportDialogBody(props: { result: GenerateResult }) {
 
         <div className="card-header">
           <span className="muted">
-            {count} structure{count === 1 ? '' : 's'}
+            {count} {pluralize(count, 'structure')}
             {sizeNote(preview.size)}
           </span>
           {preview.truncated ? (
@@ -200,12 +201,11 @@ function ExportStatus({
 
 /** What the document weighs, said only when that is worth knowing. */
 function sizeNote(size: number): string {
-  const megabytes = size / (1024 * 1024);
-  if (megabytes < 1) return '';
-  return megabytes < 1024
-    ? `, about ${Math.round(megabytes)} MB`
-    : `, about ${(megabytes / 1024).toFixed(1)} GB`;
+  // Under a megabyte the size says nothing a visitor would act on.
+  return size < BYTES_PER_MEGABYTE ? '' : `, about ${formatBytes(size)}`;
 }
+
+const BYTES_PER_MEGABYTE = 1024 * 1024;
 
 function close(): void {
   view.isExportDialogOpen.value = false;

@@ -1,27 +1,25 @@
 import { effect } from '@preact/signals-react';
+import { persistBucket as storedBucket } from 'react-cheminfo/core';
 
 /**
  * Rehydrate a bucket of signals from localStorage and re-serialize the whole
- * bucket whenever any leaf changes. Best-effort: storage errors are ignored,
- * because losing a preference must never break the page.
- * @param key - Namespaced and versioned localStorage key.
+ * bucket whenever any leaf changes. The storage half — the versioned key, the
+ * merge over the defaults and the errors a partitioned or full store throws —
+ * is the library's; what is here is the signals adapter over it.
+ * @param key - Namespaced localStorage key, without its version.
+ * @param version - Schema version, appended to the key as `:v<version>`.
  * @param bucket - Plain object whose leaves are signals.
  * @returns The same bucket, rehydrated and kept in sync with localStorage.
  */
-export function persistBucket<T extends object>(key: string, bucket: T): T {
-  try {
-    const stored = localStorage.getItem(key);
-    if (stored) rehydrate(bucket, JSON.parse(stored));
-  } catch {
-    // malformed or inaccessible storage: start from the defaults
-  }
+export function persistBucket<T extends object>(
+  key: string,
+  version: number,
+  bucket: T,
+): T {
+  const stored = storedBucket({ key, version, defaults: serialize(bucket) });
+  rehydrate(bucket, stored.read().value);
   effect(() => {
-    const serialized = JSON.stringify(serialize(bucket));
-    try {
-      localStorage.setItem(key, serialized);
-    } catch {
-      // quota exceeded: the preference simply does not survive the reload
-    }
+    stored.write(serialize(bucket));
   });
   return bucket;
 }
@@ -40,15 +38,19 @@ function isSignalLeaf(value: unknown): value is SignalLeaf {
   );
 }
 
-function rehydrate(node: object, stored: unknown): void {
-  if (typeof stored !== 'object' || stored === null) return;
+function rehydrate(node: object, stored: Record<string, unknown>): void {
   for (const [property, leaf] of Object.entries(node)) {
-    const storedValue = (stored as Record<string, unknown>)[property];
+    const storedValue = stored[property];
     if (storedValue === undefined) continue;
     if (isSignalLeaf(leaf)) {
       leaf.value = storedValue;
-    } else if (typeof leaf === 'object' && leaf !== null) {
-      rehydrate(leaf, storedValue);
+    } else if (
+      typeof leaf === 'object' &&
+      leaf !== null &&
+      typeof storedValue === 'object' &&
+      storedValue !== null
+    ) {
+      rehydrate(leaf, storedValue as Record<string, unknown>);
     }
   }
 }

@@ -48,7 +48,10 @@ test('a restriction the link carries survives, with the fold switched off', asyn
 
   await expect(page.getByText('Options and restrictions')).toHaveCount(0);
   await expect(page.getByText('Export the structures')).toHaveCount(0);
-  await expect(page.getByText('About', { exact: true })).toHaveCount(0);
+  // The part lives in the page; the header keeps its own link to /about.
+  await expect(
+    page.getByRole('main').getByText('About', { exact: true }),
+  ).toHaveCount(0);
   // The fold is gone, the restriction it holds is not: C4H6 has nine isomers,
   // seven of them without a triple bond.
   await expect(page.locator('.result-title')).toContainText('7 isomers');
@@ -84,7 +87,7 @@ test('the search a visitor runs ends up in the address, and in the shared link',
   expect(iframe).toContain('mf=C3H8O');
 
   // The label, not the input: Blueprint draws its own indicator over it.
-  await page.getByText('Frame it: no header, no navigation').click();
+  await page.getByText('Embed in another page').click();
   await expect(link).not.toContainText('embed');
 });
 

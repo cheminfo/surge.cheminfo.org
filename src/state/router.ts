@@ -1,12 +1,15 @@
 import { signal } from '@preact/signals-react';
 
 import type { Page } from './pages.ts';
-import { PAGE_PATHS, readPageOf } from './pages.ts';
+import { createPageRouter } from './pages.ts';
 import { SHARE_PARAM_KEYS } from './shareConfig.ts';
-import { pathWithoutBase, withBase } from './site.ts';
+import { BASE_PATH } from './site.ts';
 
 export type { Page } from './pages.ts';
 export { PAGE_PATHS, readPageOf } from './pages.ts';
+
+/** The addresses of this deployment, mount path included. */
+const addresses = createPageRouter(BASE_PATH);
 
 /**
  * Where the browser is. Routing is path based, through the History API,
@@ -61,16 +64,18 @@ export function navigate(
       search.set(name, value);
     }
   }
-  const query = search.toString();
-  const path = withBase(PAGE_PATHS[page]);
-  const url = query ? `${path}?${query}` : path;
+  const url = addresses.format({
+    tab: page,
+    params: Object.fromEntries(search),
+  });
   if (options.replace) {
     globalThis.history.replaceState(null, '', url);
   } else {
     globalThis.history.pushState(null, '', url);
   }
+  const mark = url.indexOf('?');
   route.page.value = page;
-  route.search.value = query ? `?${query}` : '';
+  route.search.value = mark === -1 ? '' : url.slice(mark);
 }
 
 /**
@@ -91,7 +96,7 @@ function keptParameters(page: Page): URLSearchParams {
 }
 
 function readPage(): Page {
-  return readPageOf(pathWithoutBase(globalThis.location.pathname));
+  return addresses.parse(globalThis.location.pathname).tab;
 }
 
 globalThis.addEventListener('popstate', () => {

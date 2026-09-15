@@ -1,8 +1,12 @@
-import { aboutProblems, resolveAbout } from 'react-cheminfo/core';
+import {
+  PLATFORM_PAPER,
+  aboutProblems,
+  resolveAbout,
+} from 'react-cheminfo/core';
 import { expect, test } from 'vitest';
 
 import { ABOUT } from '../about.ts';
-import { PLATFORM_PAPER, SURGE_PAPER } from '../data/papers.ts';
+import { SURGE_PAPER } from '../data/papers.ts';
 
 test('the About record is within the length the family reads', () => {
   expect(aboutProblems(ABOUT)).toStrictEqual([]);
@@ -63,7 +67,7 @@ test('the About asks for the same two papers as the Cite button', () => {
   const about = resolveAbout(ABOUT);
 
   expect(about.cite.map((work) => work.reference)).toStrictEqual([
-    SURGE_PAPER,
     PLATFORM_PAPER,
+    SURGE_PAPER,
   ]);
 });

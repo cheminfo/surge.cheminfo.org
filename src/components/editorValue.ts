@@ -23,18 +23,6 @@ export function splitEditorValue(value: string): EditorValue {
 }
 
 /**
- * How many atoms an editor value holds. Erasing a drawing leaves the editor
- * with an idCode of an empty molecule rather than an empty string, so the
- * atom count is what tells a blank canvas from a structure.
- * @param idCode - Editor value, coordinates included.
- * @returns The atom count, 0 when there is nothing to submit.
- */
-export function countAtoms(idCode: string): number {
-  const molecule = parse(idCode);
-  return molecule === null ? 0 : molecule.getAllAtoms();
-}
-
-/**
  * The molecular formula of what is on the canvas, hydrogens included.
  * @param idCode - Editor value, coordinates included.
  * @returns The formula, empty when the canvas holds nothing.

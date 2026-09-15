@@ -8,7 +8,7 @@ import { expect, test } from '@playwright/test';
 async function drawOneBond(page: Page): Promise<void> {
   // The editor draws its toolbar in a first canvas; the drawing area is the
   // last one.
-  const canvas = page.locator('.structure-editor-canvas canvas').last();
+  const canvas = page.locator('.structure-editor canvas').last();
   const box = await canvas.boundingBox();
   if (!box) throw new Error('the structure editor has no canvas');
   const y = box.y + box.height / 2;
@@ -27,7 +27,7 @@ async function expectWholeToolbar(page: Page): Promise<void> {
   // Heights are read off the layout rather than measured, so that the dialog
   // opening under a scaling transform still compares like with like.
   const toolbar = await page
-    .locator('.structure-editor-canvas canvas')
+    .locator('.structure-editor canvas')
     .first()
     .evaluate((canvas: HTMLCanvasElement) => canvas.offsetHeight);
   expect(toolbar).toBeGreaterThan(0);

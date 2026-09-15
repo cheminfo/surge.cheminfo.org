@@ -1,3 +1,5 @@
+import { sanitizeFileName } from 'react-cheminfo/core';
+
 import type { ExportFormat, StructureEntry } from '../../api/surge.ts';
 import { exportRange } from '../../api/surge.ts';
 
@@ -43,15 +45,16 @@ export const EXPORT_FORMATS: readonly ExportFormatDescriptor[] = [
 ];
 
 /**
- * The name the download is offered under.
+ * The name the download is offered under. What the dialog holds was typed by
+ * hand, so a formula written with a slash in it becomes a name rather than a
+ * path, and a box left empty still saves a file with a name.
  * @param name - What the dialog holds, without an extension.
  * @param format - Which format is being written.
  * @returns The file name.
  */
 export function exportFileName(name: string, format: ExportFormat): string {
   const descriptor = formatDescriptor(format);
-  const base = name.trim() || 'surge';
-  return `${base}.${descriptor.extension}`;
+  return `${sanitizeFileName(name, 'surge')}.${descriptor.extension}`;
 }
 
 /**

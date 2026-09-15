@@ -1,11 +1,10 @@
 import { Button, Callout, Card, Spinner, Tag } from '@blueprintjs/core';
 import { useSignals } from '@preact/signals-react/runtime';
 import { useEffect, useState } from 'react';
+import { StructureEditor, fragmentQuery } from 'react-cheminfo/structure';
 import { MF } from 'react-mf';
 
-import StructureEditor from '../../../components/StructureEditor.tsx';
 import {
-  countAtoms,
   drawnFormula,
   isFormula,
   splitEditorValue,
@@ -148,7 +147,7 @@ function AnswerEditor() {
   // it waits for the drawing to settle rather than jumping under the hand that
   // is still drawing.
   useEffect(() => {
-    if (countAtoms(idCode) === 0) return;
+    if (fragmentQuery(idCode).isEmpty) return;
     const timer = setTimeout(foldInstructionsOnDrawing, FOLD_DELAY);
     return () => clearTimeout(timer);
   }, [idCode]);
@@ -156,9 +155,13 @@ function AnswerEditor() {
   return (
     <>
       <StructureEditor
+        className="structure-editor"
         minHeight={300}
-        initialIdCode={restored}
-        onChange={setIDCode}
+        value={restored}
+        // Every stroke, because the status line under the canvas names what is
+        // drawn while it is being drawn; the settle timer above is what waits.
+        debounce={0}
+        onChange={(change) => setIDCode(change.idCode)}
       />
       <DrawingStatus
         idCode={idCode}

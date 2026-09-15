@@ -1,6 +1,7 @@
 import { Alert, Button, Card, H5, Icon, ProgressBar } from '@blueprintjs/core';
 import { useSignals } from '@preact/signals-react/runtime';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { ExerciseStatusIcon } from 'react-cheminfo/ui';
 import { MF } from 'react-mf';
 
 import type { ExerciseSummary } from '../../../api/surge.ts';
@@ -178,23 +179,38 @@ function ExerciseRow(props: {
         <span className="exercise-row-score">
           {found.length} / {exercise.count}
         </span>
-        <Icon
-          icon={statusIcon(isSolved, found.length > 0, gaveUp)}
-          intent={statusIntent(isSolved, found.length > 0, gaveUp)}
+        <RowStatus
+          solved={isSolved}
+          started={found.length > 0}
+          gaveUp={gaveUp}
         />
       </button>
     </li>
   );
 }
 
-function statusIcon(solved: boolean, started: boolean, gaveUp: boolean) {
-  if (solved) return 'tick-circle';
-  if (gaveUp) return 'eye-open';
-  return started ? 'warning-sign' : 'circle';
-}
-
-function statusIntent(solved: boolean, started: boolean, gaveUp: boolean) {
-  if (solved) return 'success';
-  if (gaveUp) return 'none';
-  return started ? 'warning' : 'none';
+function RowStatus(props: {
+  solved: boolean;
+  started: boolean;
+  gaveUp: boolean;
+}) {
+  const { solved, started, gaveUp } = props;
+  // Giving up is surge's own state, and the one the shared vocabulary has no
+  // name for: the answers are on screen, which is neither an attempt nor a
+  // solve.
+  if (!solved && gaveUp) {
+    return <Icon icon="eye-open" title="the answers were shown" />;
+  }
+  return (
+    <ExerciseStatusIcon
+      status={solved ? 'solved' : started ? 'attempted' : 'idle'}
+      title={
+        solved
+          ? 'every isomer found'
+          : started
+            ? 'some isomers found'
+            : 'not started'
+      }
+    />
+  );
 }

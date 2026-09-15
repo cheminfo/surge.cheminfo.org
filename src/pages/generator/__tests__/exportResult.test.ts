@@ -14,6 +14,8 @@ test('the file name is the formula and the extension of the format', () => {
   expect(exportFileName('C4H10O', 'idcode')).toBe('C4H10O.txt');
   expect(exportFileName(' my isomers ', 'sdf')).toBe('my isomers.sdf');
   expect(exportFileName('  ', 'sdf')).toBe('surge.sdf');
+  // Typed by hand: a separator would otherwise reach the download as a path.
+  expect(exportFileName('C6H10O/run 2', 'sdf')).toBe('C6H10O-run 2.sdf');
 });
 
 test('the preview shows the head of the document', () => {

@@ -1,3 +1,5 @@
+import { downloadBlob } from 'react-cheminfo/core';
+
 /** Where the pieces of an export document go as they are written. */
 export interface ExportWriter {
   /** Take one piece. Writing is queued: the caller never waits on the disk. */
@@ -107,7 +109,7 @@ function blobWriter(fileName: string, mediaType: string): ExportWriter {
   return {
     write: (text) => parts.push(text),
     close: () => {
-      download(fileName, new Blob(parts, { type: mediaType }));
+      downloadBlob(new Blob(parts, { type: mediaType }), fileName);
       parts.length = 0;
       return Promise.resolve();
     },
@@ -116,13 +118,4 @@ function blobWriter(fileName: string, mediaType: string): ExportWriter {
       return Promise.resolve();
     },
   };
-}
-
-function download(fileName: string, blob: Blob): void {
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = fileName;
-  link.click();
-  URL.revokeObjectURL(url);
 }

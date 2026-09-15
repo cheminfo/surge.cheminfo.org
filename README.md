@@ -6,9 +6,7 @@ finding them yourself.
 The page is a front end for
 [Surge](https://github.com/StructureGenerator/surge), which it runs itself:
 surge is carried as WebAssembly and enumerates in a worker of the browser, so
-there is no service to call and nothing to install. It replaces the cheminfo
-visualizer views for constitutional isomers, both the generator and the
-"Isomères de structure" exercise.
+there is no service to call and nothing to install.
 
 ## What it holds
 

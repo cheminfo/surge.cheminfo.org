@@ -1,5 +1,5 @@
 import { memo, useRef } from 'react';
-import { IdcodeSvgRenderer, SmilesSvgRenderer } from 'react-ocl';
+import { Structure } from 'react-cheminfo/structure';
 
 import { useVisibleRows } from './useVisibleRows.ts';
 
@@ -92,22 +92,13 @@ const StructureCell = memo(function StructureCell(props: {
       className={`structure-cell structure-cell--${structure.tone ?? 'plain'}`}
     >
       <div className="structure-cell-drawing">
-        {structure.idCode ? (
-          <IdcodeSvgRenderer
-            idcode={structure.idCode}
-            coordinates={structure.coordinates}
-            width={size}
-            height={size}
-            autoCrop
-          />
-        ) : (
-          <SmilesSvgRenderer
-            smiles={structure.smiles ?? ''}
-            width={size}
-            height={size}
-            autoCrop
-          />
-        )}
+        <Structure
+          idCode={structure.idCode}
+          coordinates={structure.coordinates}
+          smiles={structure.smiles}
+          width={size}
+          height={size}
+        />
       </div>
       {structure.label ? <figcaption>{structure.label}</figcaption> : null}
     </figure>

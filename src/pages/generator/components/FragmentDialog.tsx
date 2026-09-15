@@ -1,9 +1,8 @@
 import { Button, Dialog, DialogBody, DialogFooter } from '@blueprintjs/core';
 import { useSignals } from '@preact/signals-react/runtime';
 import { useState } from 'react';
+import { StructureEditor, fragmentQuery } from 'react-cheminfo/structure';
 
-import StructureEditor from '../../../components/StructureEditor.tsx';
-import { countAtoms } from '../../../components/editorValue.ts';
 import { data, view } from '../../../state/generator.ts';
 import { runSearch } from '../../../state/generatorUrl.ts';
 
@@ -45,14 +44,19 @@ function FragmentDialogBody() {
           to keep them all.
         </p>
         <StructureEditor
-          // Remounting is how the editor is emptied: it owns its canvas.
-          key={editor.key}
+          className="structure-editor"
           fragment
-          initialIdCode={editor.code}
-          onChange={(idCode) => {
+          value={editor.code}
+          // Reloading the canvas is how the editor is emptied: it owns what is
+          // drawn on it.
+          revision={editor.key}
+          // Every stroke: Apply filter is one click away from the last one, and
+          // a fragment still waiting out a delay would be applied as nothing.
+          debounce={0}
+          onChange={(change) => {
             // An erased drawing still has an idCode, and taking it for a filter
             // would quietly reject every structure.
-            setDraft(countAtoms(idCode) > 0 ? idCode : '');
+            setDraft(fragmentQuery(change.idCode).isEmpty ? '' : change.idCode);
           }}
         />
       </DialogBody>

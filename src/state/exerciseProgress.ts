@@ -1,7 +1,9 @@
 import { effect, signal } from '@preact/signals-react';
 
-import type { ProgressByFormula, ProgressStore } from './progressStore.ts';
-import { localStorageProgressStore } from './progressStore.ts';
+import type { ProgressByFormula, SurgeProgressStore } from './progressStore.ts';
+import { EMPTY_PROGRESS, localStorageProgressStore } from './progressStore.ts';
+
+export { EMPTY_PROGRESS } from './progressStore.ts';
 
 export interface ExerciseProgress {
   /** Canonical idCodes of the isomers the student found. */
@@ -19,13 +21,6 @@ export interface ExerciseProgress {
   hintsRevealed: number;
 }
 
-export const EMPTY_PROGRESS: ExerciseProgress = {
-  found: [],
-  drawings: {},
-  gaveUp: false,
-  hintsRevealed: 0,
-};
-
 /**
  * What the student found, kept per molecular formula rather than per set, so
  * the same formula in two courses is the same piece of work. Every change goes
@@ -35,10 +30,10 @@ export const progress = {
   byFormula: signal<ProgressByFormula>({}),
 };
 
-let store: ProgressStore = localStorageProgressStore;
+let store: SurgeProgressStore = localStorageProgressStore;
 
 /** Which binding the results are going to. */
-export function progressStore(): ProgressStore {
+export function progressStore(): SurgeProgressStore {
   return store;
 }
 
@@ -48,7 +43,9 @@ export function progressStore(): ProgressStore {
  * @param next - The binding to use from now on.
  * @returns Once what it holds has been read.
  */
-export async function setProgressStore(next: ProgressStore): Promise<void> {
+export async function setProgressStore(
+  next: SurgeProgressStore,
+): Promise<void> {
   store = next;
   progress.byFormula.value = await next.load();
 }

@@ -36,11 +36,18 @@ a:hover {
   text-decoration: underline;
 }
 
+/* The header and the page fill the screen, so the footer is always reached by
+   scrolling, however short the page is. */
+.app-screen {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+
 .page {
+  flex: 1 1 auto;
+  width: 100%;
   max-width: 1600px;
-  /* The page owns the screen it opens on, so the family links below it are
-     always reached by scrolling, however short the page is. */
-  min-height: calc(100dvh - var(--header-height));
   margin: 0 auto;
   padding: 16px 24px;
 }
@@ -48,14 +55,30 @@ a:hover {
 /* A phone: the margins are given back to the content, and nothing may push the
    page sideways. */
 @media (max-width: 700px) {
+  /* One gutter, not three stacked: a card nearly touches the edge and its own
+     padding is the margin the content reads with. */
   .page {
-    padding: 12px;
+    padding: 8px 4px;
   }
 
-  .app-header__inner,
+  .page .bp6-card {
+    padding: 12px 8px;
+  }
+
   .app-tagline {
     padding-left: 12px;
     padding-right: 12px;
+  }
+
+  /* A dialog holding the editor gives the canvas the whole screen width. */
+  .fragment-dialog,
+  .export-dialog {
+    max-width: calc(100vw - 16px);
+    margin: 8px;
+  }
+
+  .fragment-dialog .bp6-dialog-body {
+    margin: 8px;
   }
 
   .exercises,
@@ -78,6 +101,7 @@ a:hover {
 /* The tagline is what the tool does — too long for the bar, so it sits on its
    own line directly under it rather than being dropped. */
 .app-tagline {
+  width: 100%;
   max-width: var(--page-max);
   padding: 0.6rem 24px 0;
   margin: 0 auto;
@@ -130,10 +154,8 @@ a:hover {
   }
 }
 
+/* The fold itself is the library's; what the page says is where it sits. */
 .options-toggle {
-  display: flex;
-  align-items: center;
-  gap: 8px;
   margin-top: 12px;
 }
 
@@ -224,20 +246,10 @@ a:hover {
   color: var(--text-muted);
 }
 
-/* The canvas editor measures its container in pixels, so it is positioned out
-   of the height computation: otherwise card and canvas grow each other. */
+/* The editor carries its own frame, and its own floor under the toolbar; what
+   the site says is that it takes the free height of the card it sits in. */
 .structure-editor {
-  position: relative;
   flex: 1;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  overflow: hidden;
-  background: #fff;
-}
-
-.structure-editor-canvas {
-  position: absolute;
-  inset: 0;
 }
 
 /* The columns, the row height and the gap are set by the grid itself: they are
@@ -581,55 +593,10 @@ a:hover {
   margin-top: 8px;
 }
 
-.share-dialog {
-  width: 680px;
-  max-width: 92vw;
-}
-
-/* The link is above the scrolling body rather than inside it: the settings move
-   under it, it never has to be looked for. */
-.share-link {
-  flex: none;
-  padding: 12px 16px;
-  background: #fff;
-  border-bottom: 1px solid var(--border);
-}
-
-.share-link-intro {
-  margin: 0 0 8px;
-}
-
-.share-link-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-/* A set of twenty formulas makes a long address; it scrolls on its own rather
-   than pushing the settings out of the dialog. */
-.share-link .code-block pre {
-  max-height: 84px;
-  overflow-y: auto;
-}
-
-.share-section {
-  margin-top: 18px;
-}
-
-.share-section:first-child {
-  margin-top: 0;
-}
-
+/* The dialog and its sections are the library's; the heading of a section is
+   pulled tighter to the boxes under it. */
 .share-section h6 {
   margin: 0 0 8px;
-}
-
-.share-feature {
-  margin-bottom: 8px;
-}
-
-.share-feature .bp6-checkbox {
-  margin-bottom: 2px;
 }
 
 .share-hint {

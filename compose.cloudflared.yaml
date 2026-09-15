@@ -15,6 +15,20 @@ services:
     #   docker compose up -d --build
     image: ${IMAGE_NAME:-ghcr.io/cheminfo/surge.cheminfo.org}:${IMAGE_TAG:-latest}
     build: .
+    # What the server's deploy script probes before it keeps a new container.
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'wget',
+          '--spider',
+          '-q',
+          'http://127.0.0.1:${PORT:-31228}/health',
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
     init: true
     restart: unless-stopped
     stop_grace_period: 30s
@@ -46,7 +60,7 @@ services:
         max-file: '3'
 
   cloudflared:
-    image: cloudflare/cloudflared:latest
+    image: cloudflare/cloudflared:2026.9.0
     command: tunnel --no-autoupdate run --token ${TUNNEL_TOKEN}
     init: true
     restart: unless-stopped

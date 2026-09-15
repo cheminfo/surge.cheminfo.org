@@ -196,14 +196,17 @@ isomers hold each motif.
 - Global state is signal buckets in `src/state/`: `data` (what was loaded),
   `view` (ephemeral), `preferences` (persisted). Components call `useSignals()`
   as their first line whenever they read `.value`.
-- The canvas editor is uncontrolled and owns its drawing: it is **remounted
-  with a `key`** to empty it, never driven by a prop. `initialIdCode` is read
-  once, at mount, so a dialog can reopen on the fragment already in use.
+- The canvas editor is `react-cheminfo/structure`'s `StructureEditor`. It is
+  uncontrolled and owns its drawing: `value` is read once, when the canvas
+  appears, and **`revision` is bumped to load it again**, which is how a dialog
+  empties it and how it reopens on the fragment already in use. Its `onChange`
+  hands over every notation of the drawing, and `debounce={0}` is what a caller
+  asks for when the next click acts on what was just drawn.
 - **The editor is always shown whole.** Its toolbar is a canvas of a fixed
-  height that a shorter container silently cuts buttons off, so
-  `StructureEditor` measures the toolbar and gives itself at least that much
-  height; a caller's `minHeight` can only raise it. Wherever the editor is put,
-  every button must be reachable.
+  height that a shorter container silently cuts buttons off, so the editor
+  measures the toolbar and gives itself at least that much height; a caller's
+  `minHeight` can only raise it. Wherever the editor is put, every button must
+  be reachable.
 - The generator keeps the search on the left and the drawings on the right, and
   a result is meant to be read without scrolling: everything but the formula
   and its button — limit, timeout, restrictions, the substructure filter —
@@ -264,10 +267,10 @@ exportStructures.ts` owns the three formats: openchemlib draws the molfile and
 - **What the family shares is imported, never redrawn here.** The Cite and the
   Tools entries of the bar are `react-cheminfo`'s, so the papers open and the
   ten sites are listed exactly as they are on every other `*.cheminfo.org`.
-  **Two works are asked for** — the generator that enumerates the isomers, and
-  processing chemical data in the browser, which is what this site is — and both
-  are written down once, in `data/papers.ts`, with the sentence saying what
-  citing each one credits; the About panel reads the same two off it. Under
+  **Two works are asked for** — `PLATFORM_WORK` from `react-cheminfo/core`,
+  processing chemical data in the browser, which is what this site is, then the
+  generator that enumerates the isomers — and both are listed once, in
+  `data/papers.ts`, with the sentence saying what citing each one credits; the About panel reads the same two off it. Under
   1000px the bar has run out of room and every utility gives up its label for
   its icon (`useCompactHeader`), rather than pushing the pages off the edge.
 - Organise by page under `src/pages/<page>/`; keep every file under 250 lines.

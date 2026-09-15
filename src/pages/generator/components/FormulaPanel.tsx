@@ -2,13 +2,13 @@ import {
   Button,
   Callout,
   Card,
-  Collapse,
   FormGroup,
   H5,
   InputGroup,
   Tag,
 } from '@blueprintjs/core';
 import { useSignals } from '@preact/signals-react/runtime';
+import { CollapsibleSection } from 'react-cheminfo/ui';
 import { MF } from 'react-mf';
 
 import { data, preferences, view } from '../../../state/generator.ts';
@@ -110,24 +110,19 @@ export default function FormulaPanel() {
       ) : null}
 
       {isHidden('options') ? null : (
-        <>
-          <div className="options-toggle">
-            <Button
-              variant="minimal"
-              icon={showOptions ? 'chevron-down' : 'chevron-right'}
-              text="Options and restrictions"
-              onClick={() => {
-                view.showOptions.value = !showOptions;
-              }}
-            />
-            {restrictions > 0 ? (
-              <Tag intent="primary">{restrictions}</Tag>
-            ) : null}
-          </div>
-          <Collapse isOpen={showOptions}>
-            <OptionsPanel />
-          </Collapse>
-        </>
+        <CollapsibleSection
+          className="options-toggle"
+          title="Options and restrictions"
+          isOpen={showOptions}
+          rightElement={
+            restrictions > 0 ? <Tag intent="primary">{restrictions}</Tag> : null
+          }
+          onToggle={() => {
+            view.showOptions.value = !showOptions;
+          }}
+        >
+          <OptionsPanel />
+        </CollapsibleSection>
       )}
     </Card>
   );

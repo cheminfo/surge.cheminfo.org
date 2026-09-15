@@ -1,11 +1,6 @@
 import { expect, test } from 'vitest';
 
-import {
-  countAtoms,
-  drawnFormula,
-  isFormula,
-  splitEditorValue,
-} from '../editorValue.ts';
+import { drawnFormula, isFormula, splitEditorValue } from '../editorValue.ts';
 
 /** Butane, as the editor hands it over with and without its coordinates. */
 const BUTANE = 'gC`@Dij@@';
@@ -29,13 +24,11 @@ test('an empty value has no idCode at all', () => {
 });
 
 test('an erased canvas holds no atom', () => {
-  expect(countAtoms(EMPTY_CANVAS)).toBe(0);
-  expect(countAtoms('')).toBe(0);
   expect(drawnFormula(EMPTY_CANVAS)).toBe('');
+  expect(drawnFormula('')).toBe('');
 });
 
 test('the formula of a drawing is read off the drawing', () => {
-  expect(countAtoms(DRAWN_BUTANE)).toBe(4);
   expect(drawnFormula(DRAWN_BUTANE)).toBe('C4H10');
 });
 

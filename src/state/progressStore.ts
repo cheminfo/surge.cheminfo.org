@@ -1,7 +1,10 @@
+import type { ProgressRecords, ProgressStore } from 'react-cheminfo/core';
+import { localStorageProgressStore as browserProgressStore } from 'react-cheminfo/core';
+
 import type { ExerciseProgress } from './exerciseProgress.ts';
 
 /** Everything a student has done, keyed by molecular formula. */
-export type ProgressByFormula = Record<string, ExerciseProgress>;
+export type ProgressByFormula = ProgressRecords<ExerciseProgress>;
 
 /**
  * Where the results of the exercises are kept. The browser is the only
@@ -9,48 +12,26 @@ export type ProgressByFormula = Record<string, ExerciseProgress>;
  * same two calls and is plugged in with `setProgressStore`, without anything
  * else in the page knowing where the work went.
  */
-export interface ProgressStore {
-  /** How the binding names itself, for a message about it. */
-  readonly name: string;
-  /**
-   * Give back everything that was stored. A binding that answers over the
-   * network returns a promise; what it resolves to replaces whatever the page
-   * started from.
-   */
-  load: () => ProgressByFormula | Promise<ProgressByFormula>;
-  /** Keep everything, as it stands after a change. */
-  save: (byFormula: ProgressByFormula) => void | Promise<void>;
-}
+export type SurgeProgressStore = ProgressStore<ExerciseProgress>;
 
-/** Namespaced and versioned, so a future shape can ignore today's entries. */
-const STORAGE_KEY = 'surge:exercises:v1';
+/** What an exercise nobody has touched starts from. */
+export const EMPTY_PROGRESS: ExerciseProgress = {
+  found: [],
+  drawings: {},
+  gaveUp: false,
+  hintsRevealed: 0,
+};
 
 /**
  * The default binding: `localStorage`, keyed by formula. Best effort on both
  * sides — a page framed in a course may have no storage at all, and losing
- * what was found must never break the exercise.
+ * what was found must never break the exercise. A stored field whose shape is
+ * not the one its default names is dropped, so an entry written by an older
+ * version of the page opens on the defaults rather than on nonsense.
  */
-export const localStorageProgressStore: ProgressStore = {
-  name: 'this browser',
-  load(): ProgressByFormula {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      const parsed: unknown = stored ? JSON.parse(stored) : null;
-      return isProgressByFormula(parsed) ? parsed : {};
-    } catch {
-      return {};
-    }
-  },
-  save(byFormula: ProgressByFormula): void {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(byFormula));
-    } catch {
-      // quota exceeded or storage partitioned away: the work simply does not
-      // survive the reload
-    }
-  },
-};
-
-function isProgressByFormula(value: unknown): value is ProgressByFormula {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
+export const localStorageProgressStore: SurgeProgressStore =
+  browserProgressStore<ExerciseProgress>({
+    key: 'surge:exercises',
+    version: 1,
+    defaults: EMPTY_PROGRESS,
+  });

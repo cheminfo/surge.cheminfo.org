@@ -1,10 +1,10 @@
-import { Icon } from '@blueprintjs/core';
 import { useSignals } from '@preact/signals-react/runtime';
 import { useEffect, useState } from 'react';
 import {
   CiteButton,
   EcosystemButton,
   NavLink,
+  ShareButton,
   SiteFooter,
   SiteHeader,
   SiteTheme,
@@ -56,9 +56,11 @@ export default function App() {
   return (
     <>
       <SiteTheme siteId="surge" />
-      {isEmbedded() ? null : <Header page={page} />}
-      <div className="page">
-        <CurrentPage page={page} />
+      <div className="app-screen">
+        {isEmbedded() ? null : <Header page={page} />}
+        <main className="page">
+          <CurrentPage page={page} />
+        </main>
       </div>
       {isEmbedded() ? null : <SiteFooter siteId="surge" />}
     </>
@@ -96,36 +98,34 @@ function Header(props: { page: Page }) {
               item={{
                 id: 'about',
                 label: 'About',
+                icon: 'info-sign',
                 href: withBase(PAGE_PATHS.about),
                 onSelect: () => navigate('about'),
               }}
               active={props.page === 'about'}
             />
-            <a
-              className="nav-link"
-              href="https://github.com/StructureGenerator/surge"
-              target="_blank"
-              rel="noreferrer"
-            >
-              Surge{version ? ` ${version}` : ''}
-            </a>
+            <NavLink
+              item={{
+                id: 'surge',
+                label: `Surge${version ? ` ${version}` : ''}`,
+                icon: 'git-repo',
+                href: 'https://github.com/StructureGenerator/surge',
+                external: true,
+                title: 'The surge program, on GitHub',
+              }}
+            />
             <CiteButton works={SURGE_WORKS} compact={compact} />
             <EcosystemButton currentSiteId="surge" compact={compact} />
-            <button
-              type="button"
-              className="nav-link"
+            <ShareButton
+              compact={compact}
               title="Share a link to this page, or frame it in your own site"
-              aria-label="Share"
               onClick={() => {
                 // The generator writes its search when it runs one; a form left
                 // unsearched would otherwise be shared as the previous result.
                 if (props.page === 'generator') writeGeneratorAddress();
                 setSharing(true);
               }}
-            >
-              <Icon icon="share" size={14} />
-              {compact ? null : 'Share'}
-            </button>
+            />
           </>
         }
       />

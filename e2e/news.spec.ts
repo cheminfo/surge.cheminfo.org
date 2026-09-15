@@ -21,7 +21,7 @@ test('an entry opens the page it talks about', async ({ page }) => {
     .getByRole('button', { name: 'Open the exercises' })
     .click();
 
-  await expect(page).toHaveURL(/\/exercises\?formulas=C4H10O%2CC5H12/);
+  await expect(page).toHaveURL(/\/exercises\?formulas=C4H10O,C5H12/);
   await expect(page.getByText('C4H10O').first()).toBeVisible();
 });
 

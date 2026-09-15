@@ -40,6 +40,9 @@ ENV SERVER_FALLBACK_PAGE=/public/index.html
 # sitemap, the internal links and the page's own canonical never use.
 ENV SERVER_REDIRECT_TRAILING_SLASH=false
 ENV SERVER_PORT=31228
+# A /health endpoint that answers 200 and writes no access-log line, which is
+# what the compose healthcheck and the server's deploy script probe.
+ENV SERVER_HEALTH=true
 EXPOSE 31228
 
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]

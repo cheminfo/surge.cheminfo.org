@@ -7,7 +7,7 @@ import { persistBucket } from './persist.ts';
  * is what the page is for, so the instructions give it their room as soon as
  * one starts drawing.
  */
-export const preferences = persistBucket('surge:exercises-view:v1', {
+export const preferences = persistBucket('surge:exercises-view', 1, {
   /** Whether the instructions are open. */
   showInstructions: signal(true),
   /**

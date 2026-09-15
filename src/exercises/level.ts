@@ -1,5 +1,7 @@
+import type { ExerciseLevel } from 'react-cheminfo/core';
+
 /** How hard an exercise is, which is only used to colour it. */
-export type ExerciseLevel = 'beginner' | 'intermediate' | 'advanced';
+export type { ExerciseLevel } from 'react-cheminfo/core';
 
 const BEGINNER_MAX = 5;
 const INTERMEDIATE_MAX = 15;

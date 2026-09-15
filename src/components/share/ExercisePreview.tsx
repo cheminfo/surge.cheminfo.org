@@ -1,5 +1,6 @@
 import { Spinner } from '@blueprintjs/core';
 import { useEffect, useState } from 'react';
+import { pluralize } from 'react-cheminfo/core';
 import { MF } from 'react-mf';
 
 import type { ExerciseAnswer } from '../../api/surge.ts';
@@ -60,7 +61,7 @@ export default function ExercisePreview(props: { mf: string }) {
         <MF mf={mf} />
         {answers ? (
           <span className="exercise-preview-count">
-            {answers.length} {answers.length === 1 ? 'isomer' : 'isomers'}
+            {answers.length} {pluralize(answers.length, 'isomer')}
           </span>
         ) : null}
       </div>

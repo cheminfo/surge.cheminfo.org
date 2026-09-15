@@ -61,7 +61,7 @@ export const NEWS: NewsEntry[] = [
     date: '2026-08-13',
     title: 'A new interface',
     summary:
-      'One React application replaces the two visualizer views, and any page of it can be framed in a course.',
+      'The generator and the exercises now share one interface, and any page of it can be framed in a course.',
     body: [
       'The generator keeps the search on the left and the drawings on the right, so a result is read without scrolling past the form that produced it: everything but the formula and its button lives in a fold, and the substructure filter is drawn in a dialog. Under the form, one button writes what was generated as SMILES, as idCodes, or as an SDF.',
       'Every page is an address one can hand out, and the Share button builds it: a link, or an iframe to paste into a course, with the header dropped and the parts a course has no use for already switched off. A phone gets one column and one scrollbar.',

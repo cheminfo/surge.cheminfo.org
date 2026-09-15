@@ -5,7 +5,7 @@ import type { GenerateResult, RunProgress } from '../api/surge.ts';
 import { persistBucket } from './persist.ts';
 
 /** What the form holds, remembered between visits. */
-export const preferences = persistBucket('surge:generator:v3', {
+export const preferences = persistBucket('surge:generator', 3, {
   mf: signal('C6H10O'),
   limit: signal(1_000_000),
   timeout: signal(2),

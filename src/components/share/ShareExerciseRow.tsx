@@ -1,5 +1,6 @@
 import { Checkbox, Icon, PopoverNext } from '@blueprintjs/core';
 import type { DragEvent, KeyboardEvent } from 'react';
+import { pluralize } from 'react-cheminfo/core';
 import { MF } from 'react-mf';
 
 import type { ExerciseSummary } from '../../api/surge.ts';
@@ -85,7 +86,7 @@ export default function ShareExerciseRow(props: ShareExerciseRowProps) {
         >
           <MF mf={exercise.mf} />
           <span className="share-set-isomers">
-            {exercise.count} {exercise.count === 1 ? 'isomer' : 'isomers'}
+            {exercise.count} {pluralize(exercise.count, 'isomer')}
           </span>
         </Checkbox>
       </PopoverNext>
