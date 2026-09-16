@@ -1,6 +1,6 @@
 import react from '@vitejs/plugin-react';
 import { trimTrailingSlash } from 'react-cheminfo/core';
-import { cheminfoPrerender } from 'react-cheminfo/vite';
+import { cheminfoBuildInfo, cheminfoPrerender } from 'react-cheminfo/vite';
 import { defineConfig } from 'vite';
 
 import { PAGE_ROUTES } from './src/seo/routes.ts';
@@ -27,6 +27,7 @@ export default defineConfig({
   base: './',
   plugins: [
     react(),
+    cheminfoBuildInfo(),
     cheminfoPrerender({
       site: 'surge',
       routes: PAGE_ROUTES,

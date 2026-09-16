@@ -5,12 +5,16 @@
  * family holds the same sections in the same order and one voice.
  */
 
+import { BUILD_INFO } from 'react-cheminfo/build-info';
 import type { AboutContent } from 'react-cheminfo/core';
 
 import { SURGE_WORKS } from './data/papers.ts';
 
 export const ABOUT: AboutContent = {
   siteId: 'surge',
+  // Which release, built when, from which commit: the build says so,
+  // because a version written by hand is wrong by the next release.
+  build: BUILD_INFO,
   what: 'Type a molecular formula and get every constitutional isomer of it, enumerated by Surge running in your browser.',
   can: [
     'Enumerate every constitutional isomer of a molecular formula, in your browser.',
