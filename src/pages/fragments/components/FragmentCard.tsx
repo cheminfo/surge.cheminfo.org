@@ -1,6 +1,7 @@
 import { Card, Tag } from '@blueprintjs/core';
 import { Molecule } from 'openchemlib';
 import { useMemo } from 'react';
+import { ClickToCopy } from 'react-cheminfo/ui';
 import { IdcodeSvgRenderer, SvgRenderer } from 'react-ocl';
 
 import type { Fragment, FragmentUsage } from '../../../api/surge.ts';
@@ -34,7 +35,14 @@ export default function FragmentCard(props: FragmentCardProps) {
         </div>
         <div>
           <div className="fragment-label">{fragment.label}</div>
-          <code className="fragment-id">{fragment.id}</code>
+          <ClickToCopy
+            as="code"
+            className="fragment-id"
+            value={fragment.id}
+            label="fragment id"
+          >
+            {fragment.id}
+          </ClickToCopy>
         </div>
         {usage && answers !== undefined ? (
           <Tag
@@ -61,7 +69,14 @@ export default function FragmentCard(props: FragmentCardProps) {
 
       <div className="fragment-codes">
         {fragment.idCodes.map((idCode) => (
-          <code key={idCode}>{idCode}</code>
+          <ClickToCopy
+            as="code"
+            key={idCode}
+            value={idCode}
+            label="query idCode"
+          >
+            {idCode}
+          </ClickToCopy>
         ))}
       </div>
 

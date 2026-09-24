@@ -29,6 +29,9 @@ export default function AnswersPanel() {
       <StructureGrid
         structures={answers.map((answer, index) => ({
           idCode: answer.idCode,
+          // The drawing is laid out from the idCode; the SMILES is what a
+          // click takes away, and it is already known here.
+          smiles: answer.smiles,
           tone: found.has(answer.idCode) ? 'found' : 'missed',
           label: String(index + 1),
         }))}

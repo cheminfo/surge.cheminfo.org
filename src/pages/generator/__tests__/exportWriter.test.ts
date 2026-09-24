@@ -1,6 +1,6 @@
 import { afterEach, expect, test, vi } from 'vitest';
 
-import { fileWriter } from '../exportWriter.ts';
+import { clipboardWriter, fileWriter } from '../exportWriter.ts';
 
 interface FakeFile {
   written: string[];
@@ -36,6 +36,7 @@ function fakePicker(file: FakeFile) {
 
 afterEach(() => {
   Reflect.deleteProperty(globalThis, 'showSaveFilePicker');
+  vi.unstubAllGlobals();
 });
 
 test('a large document goes to the file the visitor names, piece by piece', async () => {
@@ -113,4 +114,39 @@ test('a document that fits is downloaded without a picker to answer', async () =
 
   expect(picker).not.toHaveBeenCalled();
   expect(writer).not.toBeNull();
+});
+
+test('a copied document reaches the clipboard as one string', async () => {
+  const written: string[] = [];
+  vi.stubGlobal('navigator', {
+    clipboard: {
+      writeText: (text: string) => {
+        written.push(text);
+        return Promise.resolve();
+      },
+    },
+  });
+
+  const writer = clipboardWriter();
+  writer.write('CCCCO\n');
+  writer.write('CCC(C)O\n');
+  await writer.close();
+
+  // The pieces are joined once: the clipboard takes one string.
+  expect(written).toStrictEqual(['CCCCO\nCCC(C)O\n']);
+});
+
+test('a refused clipboard is a failure, not a copy', async () => {
+  vi.stubGlobal('navigator', {
+    clipboard: {
+      writeText: () => Promise.reject(new Error('not allowed')),
+    },
+  });
+
+  const writer = clipboardWriter();
+  writer.write('CCCCO\n');
+
+  await expect(writer.close()).rejects.toThrow(
+    'The browser refused the clipboard. Download the file instead.',
+  );
 });

@@ -2,6 +2,7 @@ import { Button, Callout, Card, Spinner, Tag } from '@blueprintjs/core';
 import { useSignals } from '@preact/signals-react/runtime';
 import { useEffect, useState } from 'react';
 import { StructureEditor, fragmentQuery } from 'react-cheminfo/structure';
+import { ClickToCopy } from 'react-cheminfo/ui';
 import { MF } from 'react-mf';
 
 import {
@@ -46,9 +47,14 @@ export default function DrawAnswerPanel() {
   return (
     <Card className="draw-card">
       <div className="draw-header">
-        <div className="target-formula">
+        <ClickToCopy
+          as="div"
+          className="target-formula"
+          value={exercise.mf}
+          label="molecular formula"
+        >
           <MF mf={exercise.mf} />
-        </div>
+        </ClickToCopy>
         <Tag intent={isSolved ? 'success' : 'primary'} minimal>
           {found.length} of {exercise.count} found
         </Tag>

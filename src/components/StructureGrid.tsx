@@ -1,5 +1,8 @@
 import { memo, useRef } from 'react';
 import { Structure } from 'react-cheminfo/structure';
+import { ClickToCopy } from 'react-cheminfo/ui';
+
+import { moleculeFromIDCode } from '../chemistry/molecule.ts';
 
 import { useVisibleRows } from './useVisibleRows.ts';
 
@@ -24,6 +27,11 @@ interface StructureGridProps {
    * @default 150
    */
   size?: number;
+  /**
+   * Whether clicking a drawing copies its SMILES.
+   * @default true
+   */
+  copyable?: boolean;
 }
 
 /** Space between two cells. */
@@ -40,7 +48,7 @@ const FRAME_HEIGHT = 10;
  * @returns The grid component.
  */
 export default function StructureGrid(props: StructureGridProps) {
-  const { structures, size = 150 } = props;
+  const { structures, size = 150, copyable = true } = props;
   const gridRef = useRef<HTMLDivElement>(null);
   const cellHeight =
     size +
@@ -76,6 +84,7 @@ export default function StructureGrid(props: StructureGridProps) {
             key={structure.idCode ?? structure.smiles}
             structure={structure}
             size={size}
+            copyable={copyable}
           />
         ))}
     </div>
@@ -85,13 +94,20 @@ export default function StructureGrid(props: StructureGridProps) {
 const StructureCell = memo(function StructureCell(props: {
   structure: GridStructure;
   size: number;
+  copyable: boolean;
 }) {
-  const { structure, size } = props;
+  const { structure, size, copyable } = props;
   return (
     <figure
       className={`structure-cell structure-cell--${structure.tone ?? 'plain'}`}
     >
-      <div className="structure-cell-drawing">
+      <ClickToCopy
+        as="div"
+        className="structure-cell-drawing"
+        value={smilesOf(structure)}
+        label="SMILES"
+        disabled={!copyable}
+      >
         <Structure
           idCode={structure.idCode}
           coordinates={structure.coordinates}
@@ -99,8 +115,19 @@ const StructureCell = memo(function StructureCell(props: {
           width={size}
           height={size}
         />
-      </div>
+      </ClickToCopy>
       {structure.label ? <figcaption>{structure.label}</figcaption> : null}
     </figure>
   );
 });
+
+/**
+ * What a cell puts on the clipboard. A grid built from idCodes alone reads the
+ * SMILES off the structure only when one is asked for: a result of a million
+ * isomers must cost no openchemlib at all until a cell is clicked.
+ */
+function smilesOf(structure: GridStructure): string | (() => string) {
+  const { smiles, idCode } = structure;
+  if (smiles !== undefined) return smiles;
+  return () => moleculeFromIDCode(idCode ?? '').toIsomericSmiles();
+}

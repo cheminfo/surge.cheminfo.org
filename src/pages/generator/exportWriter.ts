@@ -1,4 +1,4 @@
-import { downloadBlob } from 'react-cheminfo/core';
+import { downloadBlob, writeToClipboard } from 'react-cheminfo/core';
 
 /** Where the pieces of an export document go as they are written. */
 export interface ExportWriter {
@@ -73,7 +73,18 @@ export function clipboardWriter(): ExportWriter {
   const parts: string[] = [];
   return {
     write: (text) => parts.push(text),
-    close: () => navigator.clipboard.writeText(parts.join('')),
+    // The document is written after a worker run, by which time the browser may
+    // no longer call this the visitor's click; a refusal has to reach the
+    // dialog as a failure rather than pass for "Copied".
+    close: async () => {
+      const written = await writeToClipboard(parts.join(''));
+      parts.length = 0;
+      if (!written) {
+        throw new Error(
+          'The browser refused the clipboard. Download the file instead.',
+        );
+      }
+    },
     abort: () => {
       parts.length = 0;
       return Promise.resolve();

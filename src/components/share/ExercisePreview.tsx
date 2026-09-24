@@ -80,6 +80,8 @@ export default function ExercisePreview(props: { mf: string }) {
             label: String(index + 1),
           }))}
           size={90}
+          // A preview under the pointer offers nothing to click.
+          copyable={false}
         />
       ) : null}
     </div>

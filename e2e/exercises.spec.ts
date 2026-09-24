@@ -242,3 +242,22 @@ test('clearing every answer asks first', async ({ page }) => {
 
   await expect(page.getByText('0 of 1 found')).toBeVisible();
 });
+
+test('a structure the student found copies its SMILES', async ({
+  page,
+  context,
+}) => {
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  await page.goto('/exercises?formulas=C2H6');
+
+  await drawOneBond(page);
+  await expect(page.getByText('1 of 1 found')).toBeVisible();
+
+  // Their own drawing is kept as an idCode, so the SMILES is read off it only
+  // when the cell is clicked — which is why the title names no value.
+  const found = page.locator('.structure-cell--found .structure-cell-drawing');
+  await expect(found).toHaveAttribute('title', 'Copy the SMILES');
+  await found.click();
+  await expect(found).toHaveAttribute('data-copy', 'copied');
+  expect(await page.evaluate(() => navigator.clipboard.readText())).toBe('CC');
+});

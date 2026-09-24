@@ -132,14 +132,16 @@ function ExportDialogBody(props: { result: GenerateResult }) {
             <span className="muted">showing the first lines</span>
           ) : null}
         </div>
-        <pre className="export-preview">{preview.text}</pre>
+        {/* A visitor picks one SMILES line or one SDF record out of it, so the
+            preview stays selectable. */}
+        <pre className="export-preview text-selectable">{preview.text}</pre>
       </DialogBody>
       <DialogFooter
         actions={
           <>
             <Button text="Close" onClick={close} />
             <Button
-              icon="duplicate"
+              icon="clipboard"
               text="Copy"
               disabled={count === 0 || count > COPY_LIMIT || writing}
               title={

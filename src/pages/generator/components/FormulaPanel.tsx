@@ -8,7 +8,7 @@ import {
   Tag,
 } from '@blueprintjs/core';
 import { useSignals } from '@preact/signals-react/runtime';
-import { CollapsibleSection } from 'react-cheminfo/ui';
+import { ClickToCopy, CollapsibleSection } from 'react-cheminfo/ui';
 import { MF } from 'react-mf';
 
 import { data, preferences, view } from '../../../state/generator.ts';
@@ -84,7 +84,12 @@ export default function FormulaPanel() {
           style={{ marginTop: 12 }}
         >
           <div className="result-title">
-            <MF mf={result.mf} /> — {result.found} isomers
+            <MF mf={result.mf} /> —{' '}
+            {/* The noun is inside the target so the glyph lands at the end of
+                the line rather than over the word. */}
+            <ClickToCopy value={String(result.found)} label="isomer count">
+              {result.found} isomers
+            </ClickToCopy>
           </div>
           <div>
             Showing {result.returned}

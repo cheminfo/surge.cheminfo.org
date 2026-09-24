@@ -13,8 +13,9 @@ import { NEWS } from './news.ts';
  * @returns The news page component.
  */
 export default function NewsPage() {
+  // The entries are read and quoted, so they stay selectable.
   return (
-    <div className="news">
+    <div className="news text-selectable">
       <Card>
         <div className="card-header">
           <H5>News</H5>
