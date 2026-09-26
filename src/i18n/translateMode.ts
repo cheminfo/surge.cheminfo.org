@@ -37,6 +37,12 @@ const PUBLISHED: Readonly<Record<string, Record<string, string>>> = {
 export async function startTranslateMode(
   search: string,
 ): Promise<string | undefined> {
+  // Answered before anything is fetched: an ordinary visit must not pay for
+  // the formatter and the checks that only a translator uses. The name is
+  // `react-cheminfo/translate`'s TRANSLATE_PARAM, written out because
+  // importing it is the very thing being avoided.
+  if (!new URLSearchParams(search).has('translate')) return undefined;
+
   const { readTranslateLocale, startTranslating } =
     await import('react-cheminfo/translate');
   const locale = readTranslateLocale(search);
