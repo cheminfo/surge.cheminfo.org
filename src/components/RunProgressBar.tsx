@@ -1,5 +1,7 @@
 import { Button, ProgressBar } from '@blueprintjs/core';
 
+import { useT } from '../i18n/useT.ts';
+
 /**
  * How far something long is, and the way out of it. Enumerating, reading a
  * result back into molecules and writing an export are all waits nobody can
@@ -13,6 +15,7 @@ export default function RunProgressBar(props: {
   value?: number;
   onCancel: () => void;
 }) {
+  const t = useT();
   return (
     <div className="run-progress">
       <ProgressBar intent="primary" value={props.value} />
@@ -23,7 +26,7 @@ export default function RunProgressBar(props: {
           size="small"
           intent="danger"
           icon="cross"
-          text="Cancel"
+          text={t('ui.run.cancel')}
           onClick={props.onCancel}
         />
       </div>

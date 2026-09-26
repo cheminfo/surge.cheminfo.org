@@ -3,6 +3,7 @@ import type { ShareConfig, ShareVocabulary } from 'react-cheminfo/core';
 import {
   EMBED_PARAM,
   HIDE_PARAM,
+  LANGUAGE_PARAM,
   isHidden as isPartHidden,
   parseShareConfig,
 } from 'react-cheminfo/core';
@@ -77,7 +78,11 @@ export const SHARE_VOCABULARY = {
 export type HideKey = (typeof SHARE_VOCABULARY)['parts'][number]['key'];
 
 /** Parameters that configure the page rather than feed the tool. */
-export const SHARE_PARAM_KEYS = [EMBED_PARAM, HIDE_PARAM] as const;
+export const SHARE_PARAM_KEYS = [
+  EMBED_PARAM,
+  HIDE_PARAM,
+  LANGUAGE_PARAM,
+] as const;
 
 /**
  * The configuration of the page currently open, read once from the address it

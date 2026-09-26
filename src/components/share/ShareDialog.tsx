@@ -3,6 +3,7 @@ import { useSignals } from '@preact/signals-react/runtime';
 import { useState } from 'react';
 import { ShareDialog as SharePanel } from 'react-cheminfo/ui';
 
+import { useT } from '../../i18n/useT.ts';
 import { FORMULAS_PARAM } from '../../state/exerciseSets.ts';
 import { data } from '../../state/exercises.ts';
 import { route } from '../../state/router.ts';
@@ -22,6 +23,7 @@ export default function ShareDialog(props: {
   onClose: () => void;
 }) {
   useSignals();
+  const t = useT();
   const options = shareOptionsOf(route.page.value);
   // Until the teacher touches the list, the link hands out the whole set —
   // derived rather than copied at mount, so a set still loading when the
@@ -48,14 +50,13 @@ export default function ShareDialog(props: {
         <>
           {options.hasExercises ? (
             <>
-              <H6>Exercises</H6>
+              <H6>{t('ui.share.exercises')}</H6>
               <ShareExerciseSet selected={selected} onChange={setChosen} />
             </>
           ) : null}
           {draft.config.embed && !options.hasExercises ? (
             <p className="share-hint share-hint--flush">
-              A framed generator never shows the limit and the timeout: it runs
-              on the ones this link carries.
+              {t('ui.share.framedHint')}
             </p>
           ) : null}
         </>

@@ -4,6 +4,7 @@ import { pluralize } from 'react-cheminfo/core';
 import { MF } from 'react-mf';
 
 import type { ExerciseSummary } from '../../api/surge.ts';
+import { useT } from '../../i18n/useT.ts';
 
 import ExercisePreview from './ExercisePreview.tsx';
 
@@ -29,6 +30,7 @@ interface ShareExerciseRowProps {
  * @returns The row component.
  */
 export default function ShareExerciseRow(props: ShareExerciseRowProps) {
+  const t = useT();
   const { exercise, index, isChosen, isDragged, isDragging, gap } = props;
 
   function keyMove(event: KeyboardEvent<HTMLSpanElement>): void {
@@ -60,7 +62,7 @@ export default function ShareExerciseRow(props: ShareExerciseRowProps) {
         role="button"
         tabIndex={0}
         aria-label={`Move ${exercise.mf}`}
-        title="Drag to reorder, or use the arrow keys"
+        title={t('ui.share.reorder')}
         onKeyDown={keyMove}
       >
         <Icon icon="drag-handle-vertical" size={12} />

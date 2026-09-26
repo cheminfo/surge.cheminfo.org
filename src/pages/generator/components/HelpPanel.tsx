@@ -2,23 +2,24 @@ import { Callout, Card, H5 } from '@blueprintjs/core';
 import { CiteButton } from 'react-cheminfo/ui';
 
 import { SURGE_WORKS } from '../../../data/papers.ts';
+import { useT } from '../../../i18n/useT.ts';
 
 /**
  * What the generator does, and who to cite for it.
  * @returns The help panel component.
  */
 export default function HelpPanel() {
+  const t = useT();
   return (
     <Card>
-      <H5>About</H5>
+      <H5>{t('ui.generator.about')}</H5>
       <p>
         Every constitutional isomer of a molecular formula is generated, so the
         number grows very quickly: past a certain size the enumeration cannot
         finish, and the answer says so instead of pretending to be complete.
       </p>
       <Callout intent="warning" icon="info-sign">
-        A crossed bond is a double bond that is either cis or trans:
-        stereochemistry is not enumerated.
+        {t('ui.generator.helpCrossed')}
       </Callout>
       <p style={{ marginTop: 12 }}>
         This service is a front end for{' '}

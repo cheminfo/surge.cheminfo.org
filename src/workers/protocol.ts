@@ -15,7 +15,13 @@ export type WorkerRequest =
   | { id: number; kind: 'exercise'; mf: string }
   | { id: number; kind: 'answers'; mf: string }
   | { id: number; kind: 'check'; mf: string; idCode: string }
-  | { id: number; kind: 'hints'; mf: string; found: string[] }
+  | {
+      id: number;
+      kind: 'hints';
+      mf: string;
+      found: string[];
+      language: string;
+    }
   | { id: number; kind: 'fragment-usage'; mf: string }
   | {
       id: number;

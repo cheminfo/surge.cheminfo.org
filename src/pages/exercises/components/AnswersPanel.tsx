@@ -2,6 +2,7 @@ import { Card, H5, Tag } from '@blueprintjs/core';
 import { useSignals } from '@preact/signals-react/runtime';
 
 import StructureGrid from '../../../components/StructureGrid.tsx';
+import { useT } from '../../../i18n/useT.ts';
 import { data, progressOf } from '../../../state/exercises.ts';
 
 /**
@@ -11,6 +12,7 @@ import { data, progressOf } from '../../../state/exercises.ts';
  */
 export default function AnswersPanel() {
   useSignals();
+  const t = useT();
   const exercise = data.current.value;
   const answers = data.answers.value;
   if (!exercise || !answers) return null;
@@ -21,7 +23,7 @@ export default function AnswersPanel() {
   return (
     <Card>
       <div className="card-header">
-        <H5>All the answers</H5>
+        <H5>{t('ui.exercises.allAnswers')}</H5>
         <Tag minimal intent={missed === 0 ? 'success' : 'danger'}>
           {missed} missed
         </Tag>

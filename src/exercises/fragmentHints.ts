@@ -1,5 +1,12 @@
 import type { FragmentDefinition } from '../chemistry/fragments/index.ts';
-import { FRAGMENTS, partialNudge } from '../chemistry/fragments/index.ts';
+import {
+  FRAGMENTS,
+  fragmentLabel,
+  fragmentMissing,
+  fragmentPartial,
+} from '../chemistry/fragments/index.ts';
+import type { Language } from '../i18n/messages.ts';
+import { translate } from '../i18n/messages.ts';
 
 /** How often one motif appears, on each side of the exercise. */
 export interface FragmentCount {
@@ -25,10 +32,12 @@ const MAX_PARTIAL = 3;
  * the motif they have not touched at all coming before the one they have
  * only half explored.
  * @param counts - How often each motif appears on each side.
+ * @param language - Language the hints are written in.
  * @returns The hints, most useful first.
  */
 export function buildFragmentHints(
   counts: Map<string, FragmentCount>,
+  language: Language,
 ): ProgressHint[] {
   const missing: Array<{ fragment: FragmentDefinition; count: FragmentCount }> =
     [];
@@ -59,14 +68,27 @@ export function buildFragmentHints(
     hints.push({
       id: fragment.id,
       kind: 'missing',
-      text: `${holders(count.answers)} ${fragment.label}, and none of yours does. ${fragment.missing}`,
+      text: translate('ui.hint.missing', language, {
+        values: {
+          holders: holders(count.answers, language),
+          label: fragmentLabel(fragment, language),
+          nudge: fragmentMissing(fragment, language),
+        },
+      }),
     });
   }
   for (const { fragment, count } of partial.slice(0, MAX_PARTIAL)) {
     hints.push({
       id: fragment.id,
       kind: 'partial',
-      text: `You have ${count.found} of the ${count.answers} answers that hold ${fragment.label}. ${partialNudge(fragment)}`,
+      text: translate('ui.hint.partial', language, {
+        values: {
+          found: count.found,
+          answers: count.answers,
+          label: fragmentLabel(fragment, language),
+          nudge: fragmentPartial(fragment, language),
+        },
+      }),
     });
   }
 
@@ -74,7 +96,7 @@ export function buildFragmentHints(
     hints.push({
       id: '',
       kind: 'complete',
-      text: 'Every motif your structures show is already complete. What is left is the same chemistry on another skeleton, or the same group on another carbon.',
+      text: translate('ui.hint.complete', language),
     });
   }
   return hints;
@@ -87,6 +109,17 @@ function isEveryMotifFound(counts: Map<string, FragmentCount>): boolean {
   return false;
 }
 
-function holders(answers: number): string {
-  return answers === 1 ? 'One answer holds' : `${answers} answers hold`;
+/**
+ * How many answers hold a motif, as the sentence reads it.
+ *
+ * The two forms are two keys rather than one ICU plural: outside translate
+ * mode the site fills placeholders itself and does not carry a plural
+ * formatter. A language needing more than one and other wants that formatter.
+ */
+function holders(answers: number, language: Language): string {
+  return answers === 1
+    ? translate('ui.hint.holders.one', language)
+    : translate('ui.hint.holders.other', language, {
+        values: { count: answers },
+      });
 }

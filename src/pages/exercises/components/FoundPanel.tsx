@@ -3,6 +3,7 @@ import { useSignals } from '@preact/signals-react/runtime';
 
 import StructureGrid from '../../../components/StructureGrid.tsx';
 import { splitEditorValue } from '../../../components/editorValue.ts';
+import { useT } from '../../../i18n/useT.ts';
 import { data, drawingOf, progressOf } from '../../../state/exercises.ts';
 
 /**
@@ -11,6 +12,7 @@ import { data, drawingOf, progressOf } from '../../../state/exercises.ts';
  */
 export default function FoundPanel() {
   useSignals();
+  const t = useT();
   const exercise = data.current.value;
   if (!exercise) return null;
 
@@ -19,7 +21,7 @@ export default function FoundPanel() {
   return (
     <Card>
       <div className="card-header">
-        <H5>Your structures</H5>
+        <H5>{t('ui.exercises.yourStructures')}</H5>
         <Tag minimal intent={found.length > 0 ? 'success' : 'none'}>
           {found.length} / {exercise.count}
         </Tag>
@@ -27,8 +29,8 @@ export default function FoundPanel() {
       {found.length === 0 ? (
         <NonIdealState
           icon="draw"
-          title="Nothing yet"
-          description="Draw an isomer on the left; it lands here as soon as it counts."
+          title={t('ui.exercises.nothingYet')}
+          description={t('ui.exercises.landsHere')}
         />
       ) : (
         <StructureGrid

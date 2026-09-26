@@ -10,6 +10,7 @@ import {
   isFormula,
   splitEditorValue,
 } from '../../../components/editorValue.ts';
+import { useT } from '../../../i18n/useT.ts';
 import {
   data,
   foldInstructionsOnDrawing,
@@ -30,6 +31,7 @@ import { isHidden } from '../../../state/shareConfig.ts';
  */
 export default function DrawAnswerPanel() {
   useSignals();
+  const t = useT();
   const exercise = data.current.value;
 
   if (view.isLoadingExercise.value && !exercise) {
@@ -51,7 +53,7 @@ export default function DrawAnswerPanel() {
           as="div"
           className="target-formula"
           value={exercise.mf}
-          label="molecular formula"
+          label={t('ui.exercises.formula')}
         >
           <MF mf={exercise.mf} />
         </ClickToCopy>
@@ -63,7 +65,7 @@ export default function DrawAnswerPanel() {
             <Button
               size="small"
               icon="eraser"
-              text="Clear my answers"
+              text={t('ui.exercises.clearMine')}
               disabled={found.length === 0 && !gaveUp}
               onClick={() => resetExercise(exercise.mf)}
             />
@@ -73,7 +75,7 @@ export default function DrawAnswerPanel() {
               size="small"
               icon="eye-open"
               intent="warning"
-              text="I give up"
+              text={t('ui.exercises.giveUp')}
               disabled={gaveUp || isSolved}
               onClick={() => void giveUp()}
             />
@@ -82,8 +84,12 @@ export default function DrawAnswerPanel() {
       </div>
 
       {isSolved ? (
-        <Callout intent="success" icon="tick-circle" title="Exercise complete">
-          You found every isomer of this formula.
+        <Callout
+          intent="success"
+          icon="tick-circle"
+          title={t('ui.exercises.complete')}
+        >
+          {t('ui.exercises.foundEvery')}
         </Callout>
       ) : (
         // An accepted answer stays on the canvas, so the key only changes when
@@ -186,6 +192,7 @@ function DrawingStatus(props: {
   checked: boolean;
 }) {
   useSignals();
+  const t = useT();
   const { idCode, mf, matches, checked } = props;
   const drawn = drawnFormula(idCode);
 
@@ -193,22 +200,20 @@ function DrawingStatus(props: {
     return (
       <div className="drawing-status">
         <Spinner size={16} />
-        <span>Checking your structure…</span>
+        <span>{t('ui.exercises.checking')}</span>
       </div>
     );
   }
   if (!drawn) {
     return (
       <div className="drawing-status muted">
-        <span>
-          Draw an isomer: it is kept as soon as it is one of the answers.
-        </span>
+        <span>{t('ui.exercises.drawAnIsomer')}</span>
       </div>
     );
   }
   return (
     <div className={matches ? 'drawing-status matching' : 'drawing-status'}>
-      <span>You have drawn</span>
+      <span>{t('ui.exercises.youHaveDrawn')}</span>
       <MF mf={drawn} />
       {matches ? (
         checked ? (

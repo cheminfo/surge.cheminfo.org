@@ -13,6 +13,10 @@ import { MF } from 'react-mf';
 
 import type { Fragment, FragmentUsage } from '../../api/surge.ts';
 import { fetchFragmentUsage, fetchFragments } from '../../api/surge.ts';
+import type { FragmentDefinition } from '../../chemistry/fragments/index.ts';
+import { fragmentLabel } from '../../chemistry/fragments/index.ts';
+import type { Language } from '../../i18n/messages.ts';
+import { useLanguage, useT } from '../../i18n/useT.ts';
 import { navigate, searchParameter } from '../../state/router.ts';
 import { errorMessage } from '../../utils/errorMessage.ts';
 
@@ -35,6 +39,8 @@ const CATEGORY_TITLES: Record<string, string> = {
  * @returns The fragments page component.
  */
 export default function FragmentsPage() {
+  const t = useT();
+  const language = useLanguage();
   const [fragments, setFragments] = useState<Fragment[] | null>(null);
   const [error, setError] = useState('');
   // Read once, when the page opens: after that the form owns which formula is
@@ -54,7 +60,7 @@ export default function FragmentsPage() {
       <Card>
         <NonIdealState
           icon="error"
-          title="No fragment could be read"
+          title={t('ui.fragments.noneRead')}
           description={error}
         />
       </Card>
@@ -77,7 +83,7 @@ export default function FragmentsPage() {
     <div className="fragments">
       <Card>
         <div className="card-header">
-          <H5>Fragments</H5>
+          <H5>{t('ui.fragments.heading')}</H5>
           <Tag minimal>{fragments.length} motifs</Tag>
         </div>
         <p className="muted">
@@ -104,7 +110,7 @@ export default function FragmentsPage() {
           <Button
             type="submit"
             icon="search"
-            text="Count in the isomers"
+            text={t('ui.fragments.countIn')}
             loading={usage.isLoading}
             disabled={!formula.trim()}
           />
@@ -133,7 +139,7 @@ export default function FragmentsPage() {
                   fragment={fragment}
                   parentLabel={
                     fragment.parent
-                      ? byId.get(fragment.parent)?.label
+                      ? parentNameOf(byId.get(fragment.parent), language)
                       : undefined
                   }
                   usage={usage.byId.get(fragment.id)}
@@ -200,3 +206,17 @@ function useFragmentUsage() {
 }
 
 type FragmentUsageResult = Awaited<ReturnType<typeof fetchFragmentUsage>>;
+
+/**
+ * What a motif's parent is called, for the card that says which motif has to
+ * be there first.
+ * @param parent - The parent motif, when the library still holds it.
+ * @param language - Language to name it in.
+ * @returns Its name, or `undefined` when there is no parent to name.
+ */
+function parentNameOf(
+  parent: FragmentDefinition | undefined,
+  language: Language,
+): string | undefined {
+  return parent === undefined ? undefined : fragmentLabel(parent, language);
+}

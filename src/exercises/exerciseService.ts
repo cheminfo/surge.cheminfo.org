@@ -7,6 +7,7 @@ import {
   moleculeFormula,
   moleculeFromIDCode,
 } from '../chemistry/molecule.ts';
+import type { Language } from '../i18n/messages.ts';
 
 import type { ExerciseAnswer, FragmentUsage } from './answerSet.ts';
 import { enumerate } from './answerSet.ts';
@@ -76,12 +77,14 @@ export async function getExerciseAnswers(
  * compared with the ones their structures hold, what they never drew first.
  * @param mf - Molecular formula of the exercise.
  * @param found - Canonical idCodes of the structures they found.
+ * @param language - Language the hints are written in.
  * @param options - Restrictions applied when enumerating the answers.
  * @returns The hints, vague first.
  */
 export async function getProgressHints(
   mf: string,
   found: string[],
+  language: Language,
   options?: SurgeOptions,
 ): Promise<ProgressHint[]> {
   const {
@@ -103,7 +106,7 @@ export async function getProgressHints(
     }
   }
 
-  const fragmentHints = buildFragmentHints(counts);
+  const fragmentHints = buildFragmentHints(counts, language);
   // Once every motif is complete, what the formula says has nothing left to
   // add: it would only offer the families the student has already drawn.
   if (fragmentHints.some((hint) => hint.kind === 'complete')) {

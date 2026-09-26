@@ -5,6 +5,7 @@ import { useRef, useState } from 'react';
 
 import type { ExerciseSummary } from '../../api/surge.ts';
 import { fetchExerciseSet } from '../../api/surge.ts';
+import { useT } from '../../i18n/useT.ts';
 import { data } from '../../state/exercises.ts';
 import { errorMessage } from '../../utils/errorMessage.ts';
 
@@ -26,6 +27,7 @@ export default function ShareExerciseSet(props: {
   onChange: (selected: string[]) => void;
 }) {
   useSignals();
+  const t = useT();
   const { selected, onChange } = props;
   const [added, setAdded] = useState<ExerciseSummary[]>([]);
   const [order, setOrder] = useState<string[]>([]);
@@ -121,13 +123,13 @@ export default function ShareExerciseSet(props: {
       <div className="share-set-toolbar">
         <Button
           size="small"
-          text="All"
+          text={t('ui.share.all')}
           disabled={selected.length === candidates.length}
           onClick={() => onChange(formulas)}
         />
         <Button
           size="small"
-          text="None"
+          text={t('ui.share.none')}
           disabled={selected.length === 0}
           onClick={() => onChange([])}
         />
@@ -173,15 +175,11 @@ export default function ShareExerciseSet(props: {
         ))}
       </ul>
 
-      <p className="share-hint share-hint--flush">
-        Drag a formula to change the order the student walks through: the bar
-        shows where it lands. The one under the cursor also moves with the arrow
-        keys.
-      </p>
+      <p className="share-hint share-hint--flush">{t('ui.share.dragHint')}</p>
 
       <div className="share-row share-set-add">
         <InputGroup
-          placeholder="Add a formula, for example C5H10O"
+          placeholder={t('ui.share.addFormula')}
           spellCheck={false}
           autoCapitalize="off"
           autoCorrect="off"
@@ -194,7 +192,7 @@ export default function ShareExerciseSet(props: {
         />
         <Button
           icon="add"
-          text="Add"
+          text={t('ui.share.add')}
           loading={isChecking}
           disabled={!draft.trim()}
           onClick={() => void add()}
@@ -208,7 +206,7 @@ export default function ShareExerciseSet(props: {
 
       {selected.length === 0 ? (
         <p className="share-hint share-hint--flush">
-          With nothing chosen, the link hands out the set of the course.
+          {t('ui.share.nothingChosen')}
         </p>
       ) : null}
     </>

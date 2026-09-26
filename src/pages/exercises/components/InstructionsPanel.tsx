@@ -2,6 +2,8 @@ import { Button, Callout } from '@blueprintjs/core';
 import { useSignals } from '@preact/signals-react/runtime';
 import { MF } from 'react-mf';
 
+import { exerciseSetDescription } from '../../../exercises/setText.ts';
+import { useLanguage, useT } from '../../../i18n/useT.ts';
 import {
   data,
   instructionPreferences,
@@ -16,6 +18,8 @@ import { isHidden } from '../../../state/shareConfig.ts';
  */
 export default function InstructionsPanel() {
   useSignals();
+  const t = useT();
+  const language = useLanguage();
   const set = data.set.value;
 
   if (!instructionPreferences.showInstructions.value) {
@@ -26,7 +30,7 @@ export default function InstructionsPanel() {
           size="small"
           variant="minimal"
           icon="learning"
-          text="How this works"
+          text={t('ui.exercises.howItWorks')}
           onClick={() => setShowInstructions(true)}
         />
       </div>
@@ -36,7 +40,9 @@ export default function InstructionsPanel() {
   return (
     <>
       <SkippedCallout />
-      <Instructions description={set?.description} />
+      <Instructions
+        description={set ? exerciseSetDescription(set, language) : undefined}
+      />
     </>
   );
 }
@@ -49,11 +55,16 @@ export default function InstructionsPanel() {
  */
 function SkippedCallout() {
   useSignals();
+  const t = useT();
   const skipped = data.set.value?.skipped ?? [];
   if (skipped.length === 0) return null;
 
   return (
-    <Callout icon="warning-sign" intent="warning" title="Left out of this set">
+    <Callout
+      icon="warning-sign"
+      intent="warning"
+      title={t('ui.exercises.leftOut')}
+    >
       {skipped.map((entry) => (
         <p key={entry.mf}>
           <MF mf={entry.mf} /> {withoutFormula(entry.reason, entry.mf)}
@@ -74,29 +85,27 @@ function withoutFormula(reason: string, mf: string): string {
  */
 function Instructions(props: { description: string | undefined }) {
   useSignals();
+  const t = useT();
   return (
     <Callout
       className="instructions-callout"
       icon="learning"
       intent="warning"
-      title="Find all constitutional isomers"
+      title={t('ui.exercises.findAll')}
     >
       <Button
         className="instructions-fold"
         size="small"
         variant="minimal"
         icon="cross"
-        title="Hide these instructions"
-        aria-label="Hide these instructions"
+        title={t('ui.exercises.hideInstructions')}
+        aria-label={t('ui.exercises.hideInstructions')}
         onClick={() => setShowInstructions(false)}
       />
       <p>{props.description}</p>
       <ol className="instructions">
-        {isHidden('list') ? null : <li>Pick an exercise on the left.</li>}
-        <li>
-          Draw one possible isomer: it is checked on its own and kept when it
-          counts, so there is nothing to press. Stereochemistry is ignored.
-        </li>
+        {isHidden('list') ? null : <li>{t('ui.exercises.pickOne')}</li>}
+        <li>{t('ui.exercises.stepDraw')}</li>
         <StuckStep />
       </ol>
     </Callout>
@@ -105,24 +114,17 @@ function Instructions(props: { description: string | undefined }) {
 
 function StuckStep() {
   useSignals();
+  const t = useT();
   const hints = !isHidden('hints');
   const answers = !isHidden('answers');
   if (!hints && !answers) return null;
 
   return (
     <li>
-      {hints ? (
-        <>
-          Stuck? Reveal a hint: the first ones read the formula, the ones after
-          them name what is missing from what you drew.{' '}
-        </>
-      ) : null}
-      {answers ? (
-        <>
-          {hints ? 'Really stuck?' : 'Stuck?'} Give up, and every answer is
-          shown — the ones you had found in green, the ones you missed in pink.
-        </>
-      ) : null}
+      {hints ? t('ui.exercises.stepHints') : null}
+      {answers
+        ? `${hints ? t('ui.exercises.reallyStuck') : t('ui.exercises.stuck')}${t('ui.exercises.stepGiveUp')}`
+        : null}
     </li>
   );
 }

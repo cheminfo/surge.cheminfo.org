@@ -1,6 +1,7 @@
 import { Button, Callout, Card, H5, Tag } from '@blueprintjs/core';
 import { useSignals } from '@preact/signals-react/runtime';
 
+import { useT } from '../../../i18n/useT.ts';
 import type { Hint } from '../../../state/exercises.ts';
 import {
   data,
@@ -17,6 +18,7 @@ import {
  */
 export default function HintsPanel() {
   useSignals();
+  const t = useT();
   const exercise = data.current.value;
   const hints = hintLadder();
   if (!exercise || hints.length === 0) return null;
@@ -27,21 +29,22 @@ export default function HintsPanel() {
   return (
     <Card>
       <div className="card-header">
-        <H5>Hints</H5>
+        <H5>{t('ui.exercises.hints')}</H5>
         {hintsRevealed < hints.length ? (
           <Button
             size="small"
             icon="lightbulb"
-            text={revealed.length === 0 ? 'Reveal a hint' : 'Another hint'}
+            text={
+              revealed.length === 0
+                ? t('ui.exercises.revealHint')
+                : t('ui.exercises.anotherHint')
+            }
             onClick={revealHint}
           />
         ) : null}
       </div>
       {revealed.length === 0 ? (
-        <p className="muted">
-          The first hints are about the formula. The ones after them look at
-          what you have already drawn and name what is missing from it.
-        </p>
+        <p className="muted">{t('ui.exercises.hintsExplain')}</p>
       ) : (
         revealed.map((hint) => <HintCallout key={hint.id} hint={hint} />)
       )}

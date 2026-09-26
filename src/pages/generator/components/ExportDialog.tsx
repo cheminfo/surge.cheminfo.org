@@ -15,6 +15,7 @@ import { formatBytes, pluralize } from 'react-cheminfo/core';
 
 import type { ExportFormat, GenerateResult } from '../../../api/surge.ts';
 import RunProgressBar from '../../../components/RunProgressBar.tsx';
+import { useT } from '../../../i18n/useT.ts';
 import { data, view } from '../../../state/generator.ts';
 import {
   EXPORT_FORMATS,
@@ -49,13 +50,14 @@ const STREAM_THRESHOLD = 64 * 1024 * 1024;
  */
 export default function ExportDialog() {
   useSignals();
+  const t = useT();
   const isOpen = view.isExportDialogOpen.value;
   const result = data.result.value;
   return (
     <Dialog
       isOpen={isOpen && result !== null}
       icon="export"
-      title="Export the structures"
+      title={t('ui.export.title')}
       className="export-dialog"
       onClose={close}
     >
@@ -67,6 +69,7 @@ export default function ExportDialog() {
 }
 
 function ExportDialogBody(props: { result: GenerateResult }) {
+  const t = useT();
   const entries = props.result.result;
   const [format, setFormat] = useState<ExportFormat>('smiles');
   const [name, setName] = useState(props.result.mf);
@@ -97,7 +100,10 @@ function ExportDialogBody(props: { result: GenerateResult }) {
         </Tabs>
         <p className="muted">{descriptor.description}</p>
 
-        <FormGroup label="File name" helperText={`Downloaded as ${fileName}`}>
+        <FormGroup
+          label={t('ui.export.fileName')}
+          helperText={`Downloaded as ${fileName}`}
+        >
           <InputGroup
             fill
             spellCheck={false}
@@ -139,10 +145,10 @@ function ExportDialogBody(props: { result: GenerateResult }) {
       <DialogFooter
         actions={
           <>
-            <Button text="Close" onClick={close} />
+            <Button text={t('ui.export.close')} onClick={close} />
             <Button
               icon="clipboard"
-              text="Copy"
+              text={t('ui.export.copy')}
               disabled={count === 0 || count > COPY_LIMIT || writing}
               title={
                 count > COPY_LIMIT
@@ -159,7 +165,7 @@ function ExportDialogBody(props: { result: GenerateResult }) {
             <Button
               intent="primary"
               icon="download"
-              text="Download"
+              text={t('ui.export.download')}
               disabled={count === 0 || writing}
               onClick={() => {
                 void run.start(

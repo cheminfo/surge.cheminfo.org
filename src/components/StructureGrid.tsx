@@ -3,6 +3,7 @@ import { Structure } from 'react-cheminfo/structure';
 import { ClickToCopy } from 'react-cheminfo/ui';
 
 import { moleculeFromIDCode } from '../chemistry/molecule.ts';
+import { useT } from '../i18n/useT.ts';
 
 import { useVisibleRows } from './useVisibleRows.ts';
 
@@ -96,6 +97,7 @@ const StructureCell = memo(function StructureCell(props: {
   size: number;
   copyable: boolean;
 }) {
+  const t = useT();
   const { structure, size, copyable } = props;
   return (
     <figure
@@ -105,7 +107,7 @@ const StructureCell = memo(function StructureCell(props: {
         as="div"
         className="structure-cell-drawing"
         value={smilesOf(structure)}
-        label="SMILES"
+        label={t('ui.grid.smiles')}
         disabled={!copyable}
       >
         <Structure

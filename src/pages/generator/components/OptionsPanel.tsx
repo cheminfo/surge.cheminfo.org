@@ -9,6 +9,7 @@ import {
 } from '@blueprintjs/core';
 import { useSignals } from '@preact/signals-react/runtime';
 
+import { useT } from '../../../i18n/useT.ts';
 import { data, preferences, view } from '../../../state/generator.ts';
 import {
   COUNTS,
@@ -28,6 +29,7 @@ import { isEmbedded, isHidden } from '../../../state/shareConfig.ts';
  */
 export default function OptionsPanel() {
   useSignals();
+  const t = useT();
   const fragmentCode = data.fragmentCode.value;
   return (
     <div className="options-panel">
@@ -35,7 +37,10 @@ export default function OptionsPanel() {
           runs on the limit and the timeout its link carries. */}
       {isEmbedded() ? null : (
         <div className="field-row">
-          <FormGroup label="Limit" helperText="Structures returned">
+          <FormGroup
+            label={t('ui.generator.limit')}
+            helperText="Structures returned"
+          >
             <InputGroup
               type="number"
               min={1}
@@ -45,7 +50,10 @@ export default function OptionsPanel() {
               }}
             />
           </FormGroup>
-          <FormGroup label="Timeout" helperText="Seconds, at most 30">
+          <FormGroup
+            label={t('ui.generator.timeout')}
+            helperText="Seconds, at most 30"
+          >
             <InputGroup
               type="number"
               min={0.1}
@@ -61,7 +69,7 @@ export default function OptionsPanel() {
       )}
       <Switch
         checked={preferences.idCode.value}
-        label="Compute the openchemlib idCode"
+        label={t('ui.generator.idCode')}
         onChange={(event) => {
           preferences.idCode.value = event.currentTarget.checked;
         }}
@@ -73,7 +81,7 @@ export default function OptionsPanel() {
           <div className="field-row">
             <Button
               icon="draw"
-              text="Substructure filter"
+              text={t('ui.generator.substructure')}
               onClick={() => {
                 view.isFragmentDialogOpen.value = true;
               }}
@@ -83,7 +91,7 @@ export default function OptionsPanel() {
                 <Tag intent="primary">active</Tag>
                 <Button
                   icon="eraser"
-                  text="Clear filter"
+                  text={t('ui.generator.clearFilter')}
                   onClick={() => {
                     data.fragmentCode.value = '';
                     void runSearch();
@@ -91,7 +99,7 @@ export default function OptionsPanel() {
                 />
               </>
             ) : (
-              <span className="muted">No fragment drawn</span>
+              <span className="muted">{t('ui.generator.noFragment')}</span>
             )}
           </div>
         </>
@@ -111,7 +119,7 @@ export default function OptionsPanel() {
 
       <Switch
         checked={view.showAdvancedOptions.value}
-        label="Show ring and substructure restrictions"
+        label={t('ui.generator.showRestrictions')}
         onChange={(event) => {
           view.showAdvancedOptions.value = event.currentTarget.checked;
         }}
@@ -122,7 +130,7 @@ export default function OptionsPanel() {
             <FormGroup key={option.label} label={option.label}>
               <InputGroup
                 size="small"
-                placeholder="max or min:max"
+                placeholder={t('ui.generator.rangePlaceholder')}
                 spellCheck={false}
                 value={option.signal.value}
                 onValueChange={(value) => {

@@ -11,6 +11,7 @@ import { useSignals } from '@preact/signals-react/runtime';
 import { ClickToCopy, CollapsibleSection } from 'react-cheminfo/ui';
 import { MF } from 'react-mf';
 
+import { useT } from '../../../i18n/useT.ts';
 import { data, preferences, view } from '../../../state/generator.ts';
 import { activeRestrictionCount } from '../../../state/generatorOptions.ts';
 import { isResultCurrent, setFormula } from '../../../state/generatorRun.ts';
@@ -34,14 +35,15 @@ const STATUS_MESSAGE = {
  */
 export default function FormulaPanel() {
   useSignals();
+  const t = useT();
   const result = data.result.value;
   const showOptions = view.showOptions.value;
   const restrictions = activeRestrictionCount.value;
   return (
     <Card>
-      <H5>Molecular formula</H5>
+      <H5>{t('ui.generator.formula')}</H5>
       <FormGroup
-        label="Formula"
+        label={t('ui.generator.formulaLabel')}
         helperText="C, B, N, P, O, S, H, Cl, F, Br and I at their lowest valence. Nx, Sx, Sy and Px select a higher one."
       >
         <InputGroup
@@ -64,7 +66,7 @@ export default function FormulaPanel() {
         size="large"
         intent="primary"
         icon="search"
-        text="Search constitutional isomers"
+        text={t('ui.generator.search')}
         loading={view.isGenerating.value}
         disabled={isResultCurrent.value}
         onClick={() => void runSearch()}
@@ -87,7 +89,10 @@ export default function FormulaPanel() {
             <MF mf={result.mf} /> —{' '}
             {/* The noun is inside the target so the glyph lands at the end of
                 the line rather than over the word. */}
-            <ClickToCopy value={String(result.found)} label="isomer count">
+            <ClickToCopy
+              value={String(result.found)}
+              label={t('ui.generator.isomerCount')}
+            >
               {result.found} isomers
             </ClickToCopy>
           </div>
@@ -106,7 +111,7 @@ export default function FormulaPanel() {
         <Button
           fill
           icon="export"
-          text="Export the structures"
+          text={t('ui.export.title')}
           style={{ marginTop: 12 }}
           onClick={() => {
             view.isExportDialogOpen.value = true;
@@ -117,7 +122,7 @@ export default function FormulaPanel() {
       {isHidden('options') ? null : (
         <CollapsibleSection
           className="options-toggle"
-          title="Options and restrictions"
+          title={t('ui.generator.options')}
           isOpen={showOptions}
           rightElement={
             restrictions > 0 ? <Tag intent="primary">{restrictions}</Tag> : null

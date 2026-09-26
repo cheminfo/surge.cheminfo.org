@@ -9,6 +9,8 @@ import {
 import { describeSet } from '../exercises/setSummary.ts';
 import { writeExport } from '../generate/exportStructures.ts';
 import { generateIsomers } from '../generate/generateIsomers.ts';
+import type { Language } from '../i18n/messages.ts';
+import { DEFAULT_LANGUAGE, isLanguage } from '../i18n/messages.ts';
 
 import type { WorkerAnswer, WorkerRequest } from './protocol.ts';
 
@@ -54,7 +56,11 @@ async function run(request: WorkerRequest): Promise<unknown> {
       return checkStructure(request.mf, request.idCode);
     }
     case 'hints': {
-      return getProgressHints(request.mf, request.found);
+      return getProgressHints(
+        request.mf,
+        request.found,
+        asLanguage(request.language),
+      );
     }
     case 'fragment-usage': {
       return getFragmentUsage(request.mf);
@@ -91,4 +97,13 @@ async function run(request: WorkerRequest): Promise<unknown> {
 
 function post(answer: WorkerAnswer): void {
   globalThis.postMessage(answer);
+}
+
+/**
+ * The language a request names, narrowed to one the site carries.
+ * @param value - What the request carried.
+ * @returns The language, or the default when it names another.
+ */
+function asLanguage(value: string): Language {
+  return isLanguage(value) ? value : DEFAULT_LANGUAGE;
 }

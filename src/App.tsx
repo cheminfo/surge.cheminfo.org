@@ -7,13 +7,18 @@ import {
   ShareButton,
   SiteFooter,
   SiteHeader,
+  SiteLanguage,
   SiteTheme,
   useCompactHeader,
 } from 'react-cheminfo/ui';
 
 import { fetchVersion } from './api/surge.ts';
+import LanguageSelect from './components/LanguageSelect.tsx';
 import ShareDialog from './components/share/ShareDialog.tsx';
 import { SURGE_WORKS } from './data/papers.ts';
+import type { MessageKey } from './i18n/messages.ts';
+import { DEFAULT_LANGUAGE } from './i18n/messages.ts';
+import { useLanguage, useT } from './i18n/useT.ts';
 import About from './pages/about/AboutPage.tsx';
 import ExercisesPage from './pages/exercises/ExercisesPage.tsx';
 import FragmentsPage from './pages/fragments/FragmentsPage.tsx';
@@ -27,11 +32,11 @@ import { navigate, route } from './state/router.ts';
 import { isEmbedded } from './state/shareConfig.ts';
 import { withBase } from './state/site.ts';
 
-const TABS: Array<{ page: Page; label: string }> = [
-  { page: 'generator', label: 'Generator' },
-  { page: 'exercises', label: 'Exercises' },
-  { page: 'fragments', label: 'Fragments' },
-  { page: 'news', label: 'News' },
+const TABS: Array<{ page: Page; key: MessageKey }> = [
+  { page: 'generator', key: 'ui.tab.generator' },
+  { page: 'exercises', key: 'ui.tab.exercises' },
+  { page: 'fragments', key: 'ui.tab.fragments' },
+  { page: 'news', key: 'ui.tab.news' },
 ];
 
 /**
@@ -41,6 +46,7 @@ const TABS: Array<{ page: Page; label: string }> = [
  */
 export default function App() {
   useSignals();
+  const language = useLanguage();
   const page = route.page.value;
 
   useEffect(() => {
@@ -54,7 +60,7 @@ export default function App() {
   }, []);
 
   return (
-    <>
+    <SiteLanguage value={language === DEFAULT_LANGUAGE ? undefined : language}>
       <SiteTheme siteId="surge" />
       <div className="app-screen">
         {isEmbedded() ? null : <Header page={page} />}
@@ -63,7 +69,7 @@ export default function App() {
         </main>
       </div>
       {isEmbedded() ? null : <SiteFooter siteId="surge" />}
-    </>
+    </SiteLanguage>
   );
 }
 
@@ -77,6 +83,7 @@ function CurrentPage(props: { page: Page }) {
 
 function Header(props: { page: Page }) {
   useSignals();
+  const t = useT();
   const version = data.surgeVersion.value;
   const [isSharing, setSharing] = useState(false);
   const compact = useCompactHeader();
@@ -89,7 +96,7 @@ function Header(props: { page: Page }) {
         activeId={props.page}
         nav={TABS.map((tab) => ({
           id: tab.page,
-          label: tab.label,
+          label: t(tab.key),
           onSelect: () => navigate(tab.page),
         }))}
         actions={
@@ -97,7 +104,7 @@ function Header(props: { page: Page }) {
             <NavLink
               item={{
                 id: 'about',
-                label: 'About',
+                label: t('ui.generator.about'),
                 icon: 'info-sign',
                 href: withBase(PAGE_PATHS.about),
                 onSelect: () => navigate('about'),
@@ -115,10 +122,11 @@ function Header(props: { page: Page }) {
               }}
             />
             <CiteButton works={SURGE_WORKS} compact={compact} />
+            <LanguageSelect compact={compact} />
             <EcosystemButton currentSiteId="surge" compact={compact} />
             <ShareButton
               compact={compact}
-              title="Share a link to this page, or frame it in your own site"
+              title={t('ui.share.title')}
               onClick={() => {
                 // The generator writes its search when it runs one; a form left
                 // unsearched would otherwise be shared as the previous result.
@@ -129,9 +137,7 @@ function Header(props: { page: Page }) {
           </>
         }
       />
-      <p className="app-tagline">
-        constitutional isomers of a molecular formula
-      </p>
+      <p className="app-tagline">{t('ui.tagline')}</p>
       {isSharing ? (
         <ShareDialog isOpen onClose={() => setSharing(false)} />
       ) : null}

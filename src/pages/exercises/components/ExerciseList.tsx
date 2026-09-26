@@ -5,6 +5,8 @@ import { ExerciseStatusIcon } from 'react-cheminfo/ui';
 import { MF } from 'react-mf';
 
 import type { ExerciseSummary } from '../../../api/surge.ts';
+import { exerciseSetTitle } from '../../../exercises/setText.ts';
+import { useLanguage, useT } from '../../../i18n/useT.ts';
 import {
   clearAllProgress,
   data,
@@ -21,6 +23,8 @@ import { revealDrawing } from '../drawingAnchor.ts';
  */
 export default function ExerciseList() {
   useSignals();
+  const t = useT();
+  const language = useLanguage();
   const [isClearing, setClearing] = useState(false);
   const set = data.set.value;
   const current = data.current.value;
@@ -34,7 +38,7 @@ export default function ExerciseList() {
   return (
     <Card className="exercise-list-card">
       <div className="card-header">
-        <H5>{set.title}</H5>
+        <H5>{exerciseSetTitle(set, language)}</H5>
         <span className="muted">
           {solved} / {set.exercises.length}
         </span>
@@ -63,7 +67,7 @@ export default function ExerciseList() {
           variant="minimal"
           icon="trash"
           intent="danger"
-          text="Clear all answers"
+          text={t('ui.exercises.clearAll')}
           onClick={() => setClearing(true)}
         />
       )}
@@ -81,8 +85,7 @@ export default function ExerciseList() {
           setClearing(false);
         }}
       >
-        Every structure you found, in every exercise, will be forgotten. There
-        is no undo.
+        {t('ui.exercises.clearWarning')}
       </Alert>
     </Card>
   );
@@ -194,12 +197,13 @@ function RowStatus(props: {
   started: boolean;
   gaveUp: boolean;
 }) {
+  const t = useT();
   const { solved, started, gaveUp } = props;
   // Giving up is surge's own state, and the one the shared vocabulary has no
   // name for: the answers are on screen, which is neither an attempt nor a
   // solve.
   if (!solved && gaveUp) {
-    return <Icon icon="eye-open" title="the answers were shown" />;
+    return <Icon icon="eye-open" title={t('ui.exercises.answersShown')} />;
   }
   return (
     <ExerciseStatusIcon

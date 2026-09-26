@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 
 import type { GridStructure } from '../../../components/StructureGrid.tsx';
 import StructureGrid from '../../../components/StructureGrid.tsx';
+import { useT } from '../../../i18n/useT.ts';
 import { data, view } from '../../../state/generator.ts';
 
 /**
@@ -12,6 +13,7 @@ import { data, view } from '../../../state/generator.ts';
  */
 export default function ResultsPanel() {
   useSignals();
+  const t = useT();
   const generated = data.result.value;
   // A formula can hold a hundred thousand isomers, so the cells are built once
   // per result rather than on every render of the page.
@@ -42,8 +44,8 @@ export default function ResultsPanel() {
       <Card>
         <NonIdealState
           icon="graph"
-          title="No structure yet"
-          description="Type a molecular formula and search for its isomers."
+          title={t('ui.generator.noStructure')}
+          description={t('ui.generator.typeFormula')}
         />
       </Card>
     );
@@ -54,10 +56,10 @@ export default function ResultsPanel() {
       <Card>
         <NonIdealState
           icon="search"
-          title="No structure matches"
+          title={t('ui.generator.noMatch')}
           description={
             result.found === 0
-              ? 'Surge generated nothing for this formula. Check that it is a possible molecule.'
+              ? t('ui.generator.generatedNothing')
               : 'The restrictions or the substructure filter left nothing. Relax them and try again.'
           }
         />
@@ -68,7 +70,7 @@ export default function ResultsPanel() {
   return (
     <Card>
       <div className="card-header">
-        <H5>Isomers</H5>
+        <H5>{t('ui.generator.isomers')}</H5>
         <Tag minimal>
           {result.returned} of {result.found}
         </Tag>

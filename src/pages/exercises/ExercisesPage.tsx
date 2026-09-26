@@ -2,6 +2,7 @@ import { Callout, Card, NonIdealState, Spinner } from '@blueprintjs/core';
 import { useSignals } from '@preact/signals-react/runtime';
 import { useEffect } from 'react';
 
+import { useT } from '../../i18n/useT.ts';
 import { data, loadSet, syncFromAddress, view } from '../../state/exercises.ts';
 import { route } from '../../state/router.ts';
 import { isHidden } from '../../state/shareConfig.ts';
@@ -20,6 +21,7 @@ import { setDrawingAnchor } from './drawingAnchor.ts';
  */
 export default function ExercisesPage() {
   useSignals();
+  const t = useT();
 
   const search = route.search.value;
 
@@ -45,8 +47,8 @@ export default function ExercisesPage() {
       <Card>
         <NonIdealState
           icon="error"
-          title="No exercise could be loaded"
-          description={view.error.value || 'The service did not answer.'}
+          title={t('ui.exercises.noneLoaded')}
+          description={view.error.value || t('ui.exercises.serviceSilent')}
         />
       </Card>
     );

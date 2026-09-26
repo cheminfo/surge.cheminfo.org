@@ -3,6 +3,7 @@ import { useSignals } from '@preact/signals-react/runtime';
 import { useState } from 'react';
 import { StructureEditor, fragmentQuery } from 'react-cheminfo/structure';
 
+import { useT } from '../../../i18n/useT.ts';
 import { data, view } from '../../../state/generator.ts';
 import { runSearch } from '../../../state/generatorUrl.ts';
 
@@ -13,12 +14,13 @@ import { runSearch } from '../../../state/generatorUrl.ts';
  */
 export default function FragmentDialog() {
   useSignals();
+  const t = useT();
   const isOpen = view.isFragmentDialogOpen.value;
   return (
     <Dialog
       isOpen={isOpen}
       icon="draw"
-      title="Substructure filter"
+      title={t('ui.generator.substructure')}
       className="fragment-dialog"
       onClose={close}
     >
@@ -30,6 +32,7 @@ export default function FragmentDialog() {
 }
 
 function FragmentDialogBody() {
+  const t = useT();
   const [editor, setEditor] = useState(() => ({
     key: 0,
     code: data.fragmentCode.peek(),
@@ -39,10 +42,7 @@ function FragmentDialogBody() {
   return (
     <>
       <DialogBody>
-        <p className="muted">
-          Draw a fragment to keep only the isomers containing it. Leave it empty
-          to keep them all.
-        </p>
+        <p className="muted">{t('ui.generator.fragmentHint')}</p>
         <StructureEditor
           className="structure-editor"
           fragment
@@ -65,18 +65,18 @@ function FragmentDialogBody() {
           <>
             <Button
               icon="eraser"
-              text="Clear"
+              text={t('ui.generator.clear')}
               disabled={!draft}
               onClick={() => {
                 setDraft('');
                 setEditor((value) => ({ key: value.key + 1, code: '' }));
               }}
             />
-            <Button text="Cancel" onClick={close} />
+            <Button text={t('ui.generator.cancel')} onClick={close} />
             <Button
               intent="primary"
               icon="filter"
-              text="Apply filter"
+              text={t('ui.generator.applyFilter')}
               onClick={() => {
                 data.fragmentCode.value = draft;
                 view.isFragmentDialogOpen.value = false;

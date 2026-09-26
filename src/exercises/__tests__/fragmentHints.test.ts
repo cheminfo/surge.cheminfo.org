@@ -23,6 +23,7 @@ test('a motif nobody drew is reported, most represented first', () => {
       ['ring-3', 7, 0],
       ['alkene', 12, 0],
     ]),
+    'en',
   );
 
   expect(hints).toHaveLength(2);
@@ -35,7 +36,7 @@ test('a motif nobody drew is reported, most represented first', () => {
 });
 
 test('a single answer is spoken of in the singular', () => {
-  const hints = buildFragmentHints(counts([['ring-5', 1, 0]]));
+  const hints = buildFragmentHints(counts([['ring-5', 1, 0]]), 'en');
 
   expect(hints[0]?.text).toContain(
     'One answer holds a five-membered ring, and none of yours does.',
@@ -43,7 +44,7 @@ test('a single answer is spoken of in the singular', () => {
 });
 
 test('a motif that is only half explored is counted out', () => {
-  const hints = buildFragmentHints(counts([['ether', 8, 3]]));
+  const hints = buildFragmentHints(counts([['ether', 8, 3]]), 'en');
 
   expect(hints).toHaveLength(1);
   expect(hints[0]?.kind).toBe('partial');
@@ -58,13 +59,16 @@ test('what was never drawn comes before what was only half explored', () => {
       ['ether', 8, 3],
       ['ring-3', 2, 0],
     ]),
+    'en',
   );
 
   expect(hints.map((hint) => hint.kind)).toStrictEqual(['missing', 'partial']);
 });
 
 test('a motif nothing in the answers holds is never mentioned', () => {
-  expect(buildFragmentHints(counts([['nitrile', 0, 0]]))).toStrictEqual([]);
+  expect(buildFragmentHints(counts([['nitrile', 0, 0]]), 'en')).toStrictEqual(
+    [],
+  );
 });
 
 test('the detail of a motif waits until the motif itself has been found', () => {
@@ -73,6 +77,7 @@ test('the detail of a motif waits until the motif itself has been found', () => 
       ['ring-3', 4, 0],
       ['ring-3-oxygen', 2, 0],
     ]),
+    'en',
   );
   expect(withoutTheRing.map((hint) => hint.id)).toStrictEqual(['ring-3']);
 
@@ -81,6 +86,7 @@ test('the detail of a motif waits until the motif itself has been found', () => 
       ['ring-3', 4, 1],
       ['ring-3-oxygen', 2, 0],
     ]),
+    'en',
   );
   expect(withTheRing.map((hint) => hint.id)).toStrictEqual([
     'ring-3-oxygen',
@@ -103,6 +109,7 @@ test('the ladder stays short enough to be climbed', () => {
       ['aldehyde', 10, 2],
       ['thiol', 9, 2],
     ]),
+    'en',
   );
 
   expect(hints.filter((hint) => hint.kind === 'missing')).toHaveLength(5);
@@ -115,6 +122,7 @@ test('a student who has covered every motif is told so', () => {
       ['alkene', 4, 4],
       ['ether', 2, 2],
     ]),
+    'en',
   );
 
   expect(hints).toStrictEqual([
@@ -127,5 +135,5 @@ test('a student who has covered every motif is told so', () => {
 });
 
 test('an exercise whose answers hold no motif at all says nothing', () => {
-  expect(buildFragmentHints(counts([]))).toStrictEqual([]);
+  expect(buildFragmentHints(counts([]), 'en')).toStrictEqual([]);
 });

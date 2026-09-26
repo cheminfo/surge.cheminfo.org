@@ -5,6 +5,13 @@ import { ClickToCopy } from 'react-cheminfo/ui';
 import { IdcodeSvgRenderer, SvgRenderer } from 'react-ocl';
 
 import type { Fragment, FragmentUsage } from '../../../api/surge.ts';
+import {
+  fragmentDescription,
+  fragmentLabel,
+  fragmentMissing,
+  fragmentPartial,
+} from '../../../chemistry/fragments/index.ts';
+import { useLanguage, useT } from '../../../i18n/useT.ts';
 
 interface FragmentCardProps {
   fragment: Fragment;
@@ -23,6 +30,8 @@ interface FragmentCardProps {
  * @returns The fragment card component.
  */
 export default function FragmentCard(props: FragmentCardProps) {
+  const t = useT();
+  const language = useLanguage();
   const { fragment, parentLabel, usage, answers } = props;
 
   return (
@@ -34,12 +43,14 @@ export default function FragmentCard(props: FragmentCardProps) {
           ))}
         </div>
         <div>
-          <div className="fragment-label">{fragment.label}</div>
+          <div className="fragment-label">
+            {fragmentLabel(fragment, language)}
+          </div>
           <ClickToCopy
             as="code"
             className="fragment-id"
             value={fragment.id}
-            label="fragment id"
+            label={t('ui.fragments.id')}
           >
             {fragment.id}
           </ClickToCopy>
@@ -55,16 +66,18 @@ export default function FragmentCard(props: FragmentCardProps) {
         ) : null}
       </div>
 
-      <p className="fragment-description">{fragment.description}</p>
+      <p className="fragment-description">
+        {fragmentDescription(fragment, language)}
+      </p>
       {parentLabel ? (
         <p className="muted">Only said once {parentLabel} has been found.</p>
       ) : null}
 
       <dl className="fragment-messages">
-        <dt>Never drawn</dt>
-        <dd>{fragment.missing}</dd>
-        <dt>Half explored</dt>
-        <dd>{fragment.partial}</dd>
+        <dt>{t('ui.fragments.neverDrawn')}</dt>
+        <dd>{fragmentMissing(fragment, language)}</dd>
+        <dt>{t('ui.fragments.halfExplored')}</dt>
+        <dd>{fragmentPartial(fragment, language)}</dd>
       </dl>
 
       <div className="fragment-codes">
@@ -73,7 +86,7 @@ export default function FragmentCard(props: FragmentCardProps) {
             as="code"
             key={idCode}
             value={idCode}
-            label="query idCode"
+            label={t('ui.fragments.queryIdCode')}
           >
             {idCode}
           </ClickToCopy>
@@ -82,7 +95,7 @@ export default function FragmentCard(props: FragmentCardProps) {
 
       {usage?.example ? (
         <div className="fragment-example">
-          <span className="muted">Matched in</span>
+          <span className="muted">{t('ui.fragments.matchedIn')}</span>
           <IdcodeSvgRenderer idcode={usage.example} width={110} autoCrop />
         </div>
       ) : null}

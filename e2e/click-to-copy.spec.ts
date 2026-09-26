@@ -55,7 +55,9 @@ test('an isomer of the result copies its SMILES', async ({ page }) => {
     await first.evaluate(
       (element) => globalThis.getComputedStyle(element).cursor,
     ),
-  ).toBe('copy');
+    // The library draws its own clipboard cursor and keeps `copy` behind it,
+    // so a browser that will not take the drawing still says what a click does.
+  ).toMatch(/^url\("data:image\/svg\+xml,.+"\) 1 1, copy$/);
 
   expect(await copyValue(page, first)).toBe('CC(C)(O)C');
 });

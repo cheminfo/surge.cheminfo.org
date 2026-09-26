@@ -16,6 +16,7 @@ import type {
   GenerateParameters,
   GenerateResult,
 } from '../generate/generateIsomers.ts';
+import type { Language } from '../i18n/messages.ts';
 import type { CallOptions } from '../workers/surgeClient.ts';
 import { ask } from '../workers/surgeClient.ts';
 
@@ -130,13 +131,15 @@ export async function checkStructure(
  * What is still missing, read from what the student has already found.
  * @param mf - Molecular formula of the exercise.
  * @param found - Canonical identifiers of the answers already given.
+ * @param language - Language the hints are written in.
  * @returns The hints to show, most useful first.
  */
 export async function fetchProgressHints(
   mf: string,
   found: string[],
+  language: Language,
 ): Promise<ProgressHint[]> {
-  return ask<ProgressHint[]>({ kind: 'hints', mf, found });
+  return ask<ProgressHint[]>({ kind: 'hints', mf, found, language });
 }
 
 /**
