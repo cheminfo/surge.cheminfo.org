@@ -3,7 +3,6 @@
   "ui.tab.generator": "Generator",
   "ui.tab.exercises": "Übungen",
   "ui.tab.fragments": "Fragmente",
-  "ui.tab.news": "Neues",
   "ui.share.title": "Einen Link zu dieser Seite teilen oder sie in die eigene Seite einbetten",
   "ui.share.exercises": "Übungen",
   "ui.share.reorder": "Zum Umsortieren ziehen, oder die Pfeiltasten benutzen",
@@ -91,6 +90,5 @@
   "ui.generator.helpGrowth": "Jedes Konstitutionsisomer einer Summenformel wird erzeugt, sodass die Zahl sehr schnell wächst: ab einer gewissen Größe ist die Anzahl die Antwort, nicht die Liste.",
   "ui.generator.helpCrossed": "Eine durchgestrichene Bindung ist eine Doppelbindung, die entweder cis oder trans ist: die Stereochemie wird nicht aufgezählt.",
   "ui.generator.typeFormula": "Geben Sie eine Summenformel ein und suchen Sie ihre Isomere.",
-  "ui.generator.generatedNothing": "Surge hat für diese Formel nichts erzeugt. Prüfen Sie, ob es ein mögliches Molekül ist.",
-  "ui.news.intro": "Der Dienst zählt die Isomere einer Formel mit surge auf und bittet Sie, sie selbst zu finden. Hier ist, was er gelernt hat."
+  "ui.generator.generatedNothing": "Surge hat für diese Formel nichts erzeugt. Prüfen Sie, ob es ein mögliches Molekül ist."
 }

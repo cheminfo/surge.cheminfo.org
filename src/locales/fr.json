@@ -3,7 +3,6 @@
   "ui.tab.generator": "Générateur",
   "ui.tab.exercises": "Exercices",
   "ui.tab.fragments": "Fragments",
-  "ui.tab.news": "Nouveautés",
   "ui.share.title": "Partager un lien vers cette page, ou l'intégrer dans votre site",
   "ui.share.exercises": "Exercices",
   "ui.share.reorder": "Glisser pour réordonner, ou utiliser les flèches",
@@ -91,6 +90,5 @@
   "ui.generator.helpGrowth": "Chaque isomère de constitution d'une formule moléculaire est généré, si bien que le nombre croît très vite : passé une certaine taille, c'est le compte qui est la réponse, pas la liste.",
   "ui.generator.helpCrossed": "Une liaison barrée est une double liaison soit cis soit trans : la stéréochimie n'est pas énumérée.",
   "ui.generator.typeFormula": "Tapez une formule moléculaire et cherchez ses isomères.",
-  "ui.generator.generatedNothing": "Surge n'a rien généré pour cette formule. Vérifiez que c'est une molécule possible.",
-  "ui.news.intro": "Le service énumère les isomères d'une formule avec surge, et vous demande de les trouver vous-même. Voici ce qu'il a appris à faire."
+  "ui.generator.generatedNothing": "Surge n'a rien généré pour cette formule. Vérifiez que c'est une molécule possible."
 }

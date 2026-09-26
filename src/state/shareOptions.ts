@@ -46,7 +46,6 @@ const PAGES: Record<
     hasExercises: true,
   },
   fragments: { title: 'Fragments', parts: [], hasExercises: false },
-  news: { title: 'News', parts: [], hasExercises: false },
   about: { title: 'About', parts: [], hasExercises: false },
 };
 

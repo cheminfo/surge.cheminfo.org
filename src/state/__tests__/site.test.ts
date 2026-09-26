@@ -47,7 +47,7 @@ test('the same build serves both addresses, because the mount is not built in', 
 
 test('every page survives the round trip under a mount', async () => {
   const site = await siteMountedAt('https://www.cheminfo.org/surge/');
-  for (const path of ['/', '/exercises', '/fragments', '/news']) {
+  for (const path of ['/', '/exercises', '/fragments', '/about']) {
     expect(site.pathWithoutBase(site.withBase(path))).toBe(path);
   }
 });

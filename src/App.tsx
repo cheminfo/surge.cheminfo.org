@@ -23,7 +23,6 @@ import About from './pages/about/AboutPage.tsx';
 import ExercisesPage from './pages/exercises/ExercisesPage.tsx';
 import FragmentsPage from './pages/fragments/FragmentsPage.tsx';
 import GeneratorPage from './pages/generator/GeneratorPage.tsx';
-import NewsPage from './pages/news/NewsPage.tsx';
 import { data } from './state/generator.ts';
 import { writeGeneratorAddress } from './state/generatorUrl.ts';
 import { PAGE_PATHS } from './state/pages.ts';
@@ -36,7 +35,6 @@ const TABS: Array<{ page: Page; key: MessageKey }> = [
   { page: 'generator', key: 'ui.tab.generator' },
   { page: 'exercises', key: 'ui.tab.exercises' },
   { page: 'fragments', key: 'ui.tab.fragments' },
-  { page: 'news', key: 'ui.tab.news' },
 ];
 
 /**
@@ -76,7 +74,6 @@ export default function App() {
 function CurrentPage(props: { page: Page }) {
   if (props.page === 'exercises') return <ExercisesPage />;
   if (props.page === 'fragments') return <FragmentsPage />;
-  if (props.page === 'news') return <NewsPage />;
   if (props.page === 'about') return <About />;
   return <GeneratorPage />;
 }

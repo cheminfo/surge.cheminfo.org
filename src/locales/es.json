@@ -3,7 +3,6 @@
   "ui.tab.generator": "Generador",
   "ui.tab.exercises": "Ejercicios",
   "ui.tab.fragments": "Fragmentos",
-  "ui.tab.news": "Novedades",
   "ui.share.title": "Compartir un enlace a esta página, o integrarla en su sitio",
   "ui.share.exercises": "Ejercicios",
   "ui.share.reorder": "Arrastrar para reordenar, o usar las flechas",
@@ -91,6 +90,5 @@
   "ui.generator.helpGrowth": "Se genera cada isómero constitucional de una fórmula molecular, de modo que el número crece muy deprisa: pasado cierto tamaño, la respuesta es el recuento, no la lista.",
   "ui.generator.helpCrossed": "Un enlace cruzado es un doble enlace que es cis o trans: la estereoquímica no se enumera.",
   "ui.generator.typeFormula": "Escriba una fórmula molecular y busque sus isómeros.",
-  "ui.generator.generatedNothing": "Surge no ha generado nada para esta fórmula. Compruebe que es una molécula posible.",
-  "ui.news.intro": "El servicio enumera los isómeros de una fórmula con surge, y le pide que los encuentre usted mismo. Esto es lo que ha aprendido a hacer."
+  "ui.generator.generatedNothing": "Surge no ha generado nada para esta fórmula. Compruebe que es una molécula posible."
 }

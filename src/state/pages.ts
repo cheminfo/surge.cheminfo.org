@@ -1,14 +1,13 @@
 import type { TabRouter } from 'react-cheminfo/core';
 import { createTabRouter } from 'react-cheminfo/core';
 
-export type Page = 'generator' | 'exercises' | 'fragments' | 'news' | 'about';
+export type Page = 'generator' | 'exercises' | 'fragments' | 'about';
 
 /** Where each page lives, the generator being the root. */
 export const PAGE_PATHS: Record<Page, string> = {
   generator: '/',
   exercises: '/exercises',
   fragments: '/fragments',
-  news: '/news',
   about: '/about',
 };
 

@@ -18,7 +18,7 @@ import type { RouteMeta } from 'react-cheminfo/core';
 import { PAGE_PATHS } from '../state/pages.ts';
 
 /**
- * The five pages of the site, the generator being the home page.
+ * The four pages of the site, the generator being the home page.
  *
  * A title is written for a search result and a `short` for a menu, so the
  * `noscript` index links each page under the name it is known by and says in a
@@ -48,14 +48,6 @@ export const PAGE_ROUTES: readonly RouteMeta[] = [
       'Rings, alcohols, amines, halogens: the motifs an exercise hint is built from, each with its openchemlib query and how many isomers of a formula hold it.',
     short: 'Fragments',
     note: 'the motifs behind the hints',
-  },
-  {
-    path: PAGE_PATHS.news,
-    title: 'What changed in Surge',
-    description:
-      'The releases of this site and of the Surge generator behind it: what each one added, and what it means for the structures you get back.',
-    short: 'News',
-    note: 'what changed in Surge',
   },
   {
     path: PAGE_PATHS.about,

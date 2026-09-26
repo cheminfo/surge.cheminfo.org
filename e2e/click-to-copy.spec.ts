@@ -117,7 +117,4 @@ test('what is read rather than driven stays selectable', async ({ page }) => {
 
   // A visitor takes one SMILES line out of the preview by selecting it.
   expect(await userSelect(page, '.export-preview')).toBe('text');
-
-  await page.goto('/news');
-  expect(await userSelect(page, '.news-summary')).toBe('text');
 });
