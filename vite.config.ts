@@ -3,6 +3,7 @@ import { trimTrailingSlash } from 'react-cheminfo/core';
 import { cheminfoBuildInfo, cheminfoPrerender } from 'react-cheminfo/vite';
 import { defineConfig } from 'vite';
 
+import { pageContent } from './src/seo/content.ts';
 import { PAGE_ROUTES } from './src/seo/routes.ts';
 import { configuredSiteUrl } from './src/state/sitePath.ts';
 
@@ -31,6 +32,9 @@ export default defineConfig({
     cheminfoPrerender({
       site: 'surge',
       routes: PAGE_ROUTES,
+      // What each address says for itself: without it every address ships the
+      // same body, this site's menu, and a search engine folds them into one.
+      content: pageContent,
       // Origin *and* mount: `pageDocumentMeta` writes `${origin}${route.path}`,
       // so a SITE_URL of `https://example.org/surge/` puts every canonical,
       // og:url, og:image and sitemap entry under the mount, as the deleted
