@@ -90,5 +90,8 @@
   "ui.generator.helpGrowth": "Chaque isomère de constitution d'une formule moléculaire est généré, si bien que le nombre croît très vite : passé une certaine taille, c'est le compte qui est la réponse, pas la liste.",
   "ui.generator.helpCrossed": "Une liaison barrée est une double liaison soit cis soit trans : la stéréochimie n'est pas énumérée.",
   "ui.generator.typeFormula": "Tapez une formule moléculaire et cherchez ses isomères.",
-  "ui.generator.generatedNothing": "Surge n'a rien généré pour cette formule. Vérifiez que c'est une molécule possible."
+  "ui.generator.generatedNothing": "Surge n'a rien généré pour cette formule. Vérifiez que c'est une molécule possible.",
+  "ui.generator.helpFrontEnd": "Ce service est une interface pour {surge}, exécuté dans le navigateur. Merci de citer les deux travaux : le traitement des données dans le navigateur et le générateur d'isomères.",
+  "ui.fragments.motifCount": "{count} motifs",
+  "ui.fragments.hasIsomers": "{formula} a {count} isomères"
 }

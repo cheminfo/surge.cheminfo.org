@@ -90,5 +90,8 @@
   "ui.generator.helpGrowth": "Jedes Konstitutionsisomer einer Summenformel wird erzeugt, sodass die Zahl sehr schnell wächst: ab einer gewissen Größe ist die Anzahl die Antwort, nicht die Liste.",
   "ui.generator.helpCrossed": "Eine durchgestrichene Bindung ist eine Doppelbindung, die entweder cis oder trans ist: die Stereochemie wird nicht aufgezählt.",
   "ui.generator.typeFormula": "Geben Sie eine Summenformel ein und suchen Sie ihre Isomere.",
-  "ui.generator.generatedNothing": "Surge hat für diese Formel nichts erzeugt. Prüfen Sie, ob es ein mögliches Molekül ist."
+  "ui.generator.generatedNothing": "Surge hat für diese Formel nichts erzeugt. Prüfen Sie, ob es ein mögliches Molekül ist.",
+  "ui.generator.helpFrontEnd": "Dieser Dienst ist eine Oberfläche für {surge}, ausgeführt im Browser. Bitte zitieren Sie beide Arbeiten: die Datenverarbeitung im Browser und den Isomerengenerator.",
+  "ui.fragments.motifCount": "{count} Motive",
+  "ui.fragments.hasIsomers": "{formula} hat {count} Isomere"
 }

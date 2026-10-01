@@ -282,5 +282,8 @@
   "fragmentCategory.nitrogen.nudge": "The same group sits on another carbon, or on another skeleton.",
   "fragmentCategory.sulfur.nudge": "The same group sits on another carbon, or on another skeleton.",
   "fragmentCategory.halogen.nudge": "The same substituent sits on another carbon.",
-  "fragmentCategory.skeleton.nudge": "The same motif fits on more than one skeleton."
+  "fragmentCategory.skeleton.nudge": "The same motif fits on more than one skeleton.",
+  "ui.generator.helpFrontEnd": "This service is a front end for {surge}, run in the browser. Please cite both works: data processing in the browser and the isomer generator.",
+  "ui.fragments.motifCount": "{count} motifs",
+  "ui.fragments.hasIsomers": "{formula} has {count} isomers"
 }

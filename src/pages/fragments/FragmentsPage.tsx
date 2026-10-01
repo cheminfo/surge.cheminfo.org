@@ -9,6 +9,7 @@ import {
   Tag,
 } from '@blueprintjs/core';
 import { useCallback, useEffect, useState } from 'react';
+import { Prose } from 'react-cheminfo/ui';
 import { MF } from 'react-mf';
 
 import type { Fragment, FragmentUsage } from '../../api/surge.ts';
@@ -84,15 +85,11 @@ export default function FragmentsPage() {
       <Card>
         <div className="card-header">
           <H5>{t('ui.fragments.heading')}</H5>
-          <Tag minimal>{fragments.length} motifs</Tag>
+          <Tag minimal>
+            {t('ui.fragments.motifCount', { count: fragments.length })}
+          </Tag>
         </div>
-        <p className="muted">
-          Every structure the service sees — an answer of an exercise, or one a
-          student drew — is searched for these motifs. What the answers hold and
-          what the student holds are then compared, and the difference is the
-          hint. Each motif is one or more openchemlib query fragments, given
-          below as the idCodes that are actually searched with.
-        </p>
+        <p className="muted">{t('ui.fragments.explain')}</p>
         <form
           className="field-row"
           onSubmit={(event) => {
@@ -116,7 +113,10 @@ export default function FragmentsPage() {
           />
           {usage.mf ? (
             <span className="muted">
-              <MF mf={usage.mf} /> has {usage.count} isomers
+              <Prose
+                text={t('ui.fragments.hasIsomers', { count: usage.count })}
+                nodes={{ formula: <MF mf={usage.mf} /> }}
+              />
             </span>
           ) : null}
         </form>

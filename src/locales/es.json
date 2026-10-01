@@ -90,5 +90,8 @@
   "ui.generator.helpGrowth": "Se genera cada isómero constitucional de una fórmula molecular, de modo que el número crece muy deprisa: pasado cierto tamaño, la respuesta es el recuento, no la lista.",
   "ui.generator.helpCrossed": "Un enlace cruzado es un doble enlace que es cis o trans: la estereoquímica no se enumera.",
   "ui.generator.typeFormula": "Escriba una fórmula molecular y busque sus isómeros.",
-  "ui.generator.generatedNothing": "Surge no ha generado nada para esta fórmula. Compruebe que es una molécula posible."
+  "ui.generator.generatedNothing": "Surge no ha generado nada para esta fórmula. Compruebe que es una molécula posible.",
+  "ui.generator.helpFrontEnd": "Este servicio es una interfaz para {surge}, ejecutado en el navegador. Cite ambos trabajos: el procesamiento de datos en el navegador y el generador de isómeros.",
+  "ui.fragments.motifCount": "{count} motivos",
+  "ui.fragments.hasIsomers": "{formula} tiene {count} isómeros"
 }

@@ -1,5 +1,5 @@
 import type { CitedWork, Reference } from 'react-cheminfo/core';
-import { PLATFORM_WORK } from 'react-cheminfo/core';
+import { PLATFORM_WORK, TEACHING_WORK } from 'react-cheminfo/core';
 
 /**
  * The generator this service is a front end for: every structure the site hands
@@ -26,12 +26,13 @@ export const SURGE_PAPER: Reference = {
 };
 
 /**
- * The two works this site asks to be cited, the platform paper first, each with
- * what citing it credits. One place holds them, so the header's Cite button and
- * the About panel can never name a different paper.
+ * The three works this site asks to be cited, the platform paper first, each
+ * with what citing it credits. One place holds them, so the header's Cite
+ * button and the About panel can never name a different paper.
  */
 export const SURGE_WORKS: readonly CitedWork[] = [
   PLATFORM_WORK,
+  TEACHING_WORK,
   {
     reference: SURGE_PAPER,
     what: 'The isomer generator',

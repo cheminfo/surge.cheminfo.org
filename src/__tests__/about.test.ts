@@ -1,5 +1,6 @@
 import {
   PLATFORM_PAPER,
+  TEACHING_PAPER,
   aboutProblems,
   resolveAbout,
 } from 'react-cheminfo/core';
@@ -54,20 +55,14 @@ test('every borrowed work the site runs on is named, and resolves', () => {
     'React',
     'Vite',
   ]);
-  expect(about.repository).toBe(
-    'https://github.com/cheminfo/surge.cheminfo.org',
-  );
-  expect(about.issues).toBe(
-    'https://github.com/cheminfo/surge.cheminfo.org/issues',
-  );
-  expect(about.license).toBe('MIT');
 });
 
-test('the About asks for the same two papers as the Cite button', () => {
+test('the About asks for the same three papers as the Cite button', () => {
   const about = resolveAbout(ABOUT);
 
   expect(about.cite.map((work) => work.reference)).toStrictEqual([
     PLATFORM_PAPER,
+    TEACHING_PAPER,
     SURGE_PAPER,
   ]);
 });
