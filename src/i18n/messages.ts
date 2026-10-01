@@ -8,10 +8,13 @@
  * in English rather than a page of raw keys.
  */
 
+import type { Language } from 'react-cheminfo/core';
+
 import de from '../locales/de.json' with { type: 'json' };
 import en from '../locales/en.json' with { type: 'json' };
 import es from '../locales/es.json' with { type: 'json' };
 import fr from '../locales/fr.json' with { type: 'json' };
+import it from '../locales/it.json' with { type: 'json' };
 
 /**
  * The name this page knows its own catalog by, and which a translator's edit
@@ -19,26 +22,19 @@ import fr from '../locales/fr.json' with { type: 'json' };
  */
 export const SITE_CATALOG_ID = 'surge.cheminfo.org';
 
-/** The languages the site is written in. */
-export const LANGUAGES = ['en', 'fr', 'de', 'es'] as const;
-
-/** One of {@link LANGUAGES}. */
-export type Language = (typeof LANGUAGES)[number];
-
 /**
- * The language the catalogs are written in first, and the one a site of the
- * family opens in: an address naming it carries nothing, a translation
- * missing a key falls back to it.
+ * The languages the site is written in, which are the family's: a visitor who
+ * switches on one tool and follows a link to the next must land in the same
+ * language there, so the list is decided once in `react-cheminfo` and read
+ * from it here.
  */
-export const DEFAULT_LANGUAGE: Language = 'en';
-
-/** What the language switch writes in each entry, in that language itself. */
-export const LANGUAGE_LABELS: Record<Language, string> = {
-  en: 'English',
-  fr: 'Français',
-  de: 'Deutsch',
-  es: 'Español',
-};
+export {
+  DEFAULT_LANGUAGE,
+  LANGUAGES,
+  LANGUAGE_LABELS,
+  type Language,
+  isLanguage,
+} from 'react-cheminfo/core';
 
 /** Every key the English catalog defines. */
 export type MessageKey = keyof typeof en;
@@ -65,6 +61,7 @@ const CATALOGS: Record<Language, Readonly<Record<string, string>>> = {
   fr,
   de,
   es,
+  it,
 };
 
 /** What {@link setTranslateSession} needs of a session. */
@@ -109,18 +106,6 @@ export function translate(
  */
 export function setTranslateSession(active: MessageSession | null): void {
   session = active;
-}
-
-/**
- * Whether a string is one of the languages the site is written in.
- * @param value - Candidate code, typically a URL query value.
- * @returns True when the site has a catalog for it.
- */
-export function isLanguage(value: string): value is Language {
-  for (const language of LANGUAGES) {
-    if (language === value) return true;
-  }
-  return false;
 }
 
 /** A catalog's own message, never one inherited from `Object.prototype`. */

@@ -1,28 +1,39 @@
 import { effect } from '@preact/signals-react';
 import { StrictMode } from 'react';
-import { startDocumentMeta } from 'react-cheminfo/core';
+import {
+  LANGUAGES,
+  startDocumentMeta,
+  withLanguagePath,
+} from 'react-cheminfo/core';
 import { createRoot } from 'react-dom/client';
 
 import '@blueprintjs/core/lib/css/blueprint.css';
 import '@blueprintjs/icons/lib/css/blueprint-icons.css';
 import App from './App.tsx';
 import { startTranslateMode } from './i18n/translateMode.ts';
-import { PAGE_ROUTES } from './seo/routes.ts';
+import { routesFor } from './seo/routes.ts';
 import { readGeneratorAddress } from './state/generatorUrl.ts';
-import { applyLanguageFromSearch } from './state/language.ts';
+import { adoptLanguageAddress } from './state/language.ts';
 import { PAGE_PATHS, route } from './state/router.ts';
 import { absoluteUrl } from './state/site.ts';
 import './index.css';
 
 // Before the first paint, so a link opens on the search it names rather than
-// on the last one this browser ran, and in the language it names rather than
-// in the one this browser last chose.
+// on the last one this browser ran, and in the language its own address names
+// rather than in the one this browser last chose.
 readGeneratorAddress();
-applyLanguageFromSearch(globalThis.location.search);
+adoptLanguageAddress();
+
+// The build wrote the head of the file it served; this is what an in-app move
+// changes. The table is a function of the language, so the title, the
+// description, the canonical and `<html lang>` all follow the language as well
+// as the page.
 startDocumentMeta({
   site: 'surge',
-  routes: PAGE_ROUTES,
-  url: () => PAGE_PATHS[route.page.value],
+  routes: routesFor,
+  languages: LANGUAGES,
+  url: () =>
+    withLanguagePath(route.language.value, PAGE_PATHS[route.page.value]),
   // Read off the page rather than off the build, so a deployment under
   // `/surge` describes itself instead of an address it does not serve.
   origin: absoluteUrl('/'),

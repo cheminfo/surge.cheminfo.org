@@ -20,6 +20,28 @@ Surge is the only thing that decides what an isomer is: the number to find in
 an exercise is enumerated at run time, never hard-coded, so an exercise and
 its correction can never disagree.
 
+## Languages
+
+The page is written in English, French, German, Spanish and Italian, and **the
+language is a prefix on the address**: `/fr/exercises` is the French exercises
+page, `/de/fragments` the German motif library. English carries no prefix, so
+every link handed out before the site was translated still opens the page it
+named. Each of the 20 addresses is a file of its own, with its own title,
+description and canonical, and they name each other with `hreflang`.
+
+| Address              | What it is                |
+| -------------------- | ------------------------- |
+| `/exercises`         | The exercises, in English |
+| `/fr/exercises`      | The same page, in French  |
+| `/exercises?lang=de` | Opens `/de/exercises`     |
+
+A link from another site of the family carries `?lang=`, which is adopted once
+and rewritten to the prefix. The language switch sits at the top right and
+keeps the page and the query; a deep link is never redirected, so a shared
+`/fr/exercises` opens in French for everybody and `/exercises` in English for
+everybody. A framed page inherits the prefix: a French course frames
+`/fr/?embed=1`.
+
 ## Taking a result away
 
 Under the formula, **Export the structures** opens a dialog that writes what

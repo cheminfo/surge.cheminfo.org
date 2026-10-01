@@ -3,7 +3,7 @@ import { fetchProgressHints } from '../api/surge.ts';
 import { progressOf, updateProgress } from './exerciseProgress.ts';
 import type { Hint } from './exerciseState.ts';
 import { data, isWanted } from './exerciseState.ts';
-import { preferences } from './language.ts';
+import { route } from './router.ts';
 
 /**
  * The ladder of the exercise being solved: what the formula says, then what
@@ -54,7 +54,7 @@ export async function refreshProgressHints(mf: string): Promise<void> {
     const hints = await fetchProgressHints(
       mf,
       progressOf(mf).found,
-      preferences.language.peek(),
+      route.language.peek(),
     );
     // Advice about one formula must never show up under another.
     if (isWanted(mf)) data.progressHints.value = hints;

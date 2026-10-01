@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import {
   CiteButton,
   EcosystemButton,
+  LanguageSelect,
   NavLink,
   ShareButton,
   SiteFooter,
@@ -13,7 +14,6 @@ import {
 } from 'react-cheminfo/ui';
 
 import { fetchVersion } from './api/surge.ts';
-import LanguageSelect from './components/LanguageSelect.tsx';
 import ShareDialog from './components/share/ShareDialog.tsx';
 import { SURGE_WORKS } from './data/papers.ts';
 import type { MessageKey } from './i18n/messages.ts';
@@ -25,11 +25,10 @@ import FragmentsPage from './pages/fragments/FragmentsPage.tsx';
 import GeneratorPage from './pages/generator/GeneratorPage.tsx';
 import { data } from './state/generator.ts';
 import { writeGeneratorAddress } from './state/generatorUrl.ts';
-import { PAGE_PATHS } from './state/pages.ts';
+import { setLanguage } from './state/language.ts';
 import type { Page } from './state/router.ts';
-import { navigate, route } from './state/router.ts';
+import { navigate, pageHref, route } from './state/router.ts';
 import { isEmbedded } from './state/shareConfig.ts';
-import { withBase } from './state/site.ts';
 
 const TABS: Array<{ page: Page; key: MessageKey }> = [
   { page: 'generator', key: 'ui.tab.generator' },
@@ -81,6 +80,7 @@ function CurrentPage(props: { page: Page }) {
 function Header(props: { page: Page }) {
   useSignals();
   const t = useT();
+  const language = useLanguage();
   const version = data.surgeVersion.value;
   const [isSharing, setSharing] = useState(false);
   const compact = useCompactHeader();
@@ -89,7 +89,7 @@ function Header(props: { page: Page }) {
     <>
       <SiteHeader
         siteId="surge"
-        homeHref={withBase('/')}
+        homeHref={pageHref('generator', language)}
         activeId={props.page}
         nav={TABS.map((tab) => ({
           id: tab.page,
@@ -103,7 +103,7 @@ function Header(props: { page: Page }) {
                 id: 'about',
                 label: t('ui.generator.about'),
                 icon: 'info-sign',
-                href: withBase(PAGE_PATHS.about),
+                href: pageHref('about', language),
                 onSelect: () => navigate('about'),
               }}
               active={props.page === 'about'}
@@ -119,8 +119,12 @@ function Header(props: { page: Page }) {
               }}
             />
             <CiteButton works={SURGE_WORKS} compact={compact} />
-            <LanguageSelect compact={compact} />
             <EcosystemButton currentSiteId="surge" compact={compact} />
+            <LanguageSelect
+              value={language}
+              onChange={setLanguage}
+              compact={compact}
+            />
             <ShareButton
               compact={compact}
               title={t('ui.share.title')}

@@ -1,5 +1,11 @@
-import type { TabRouter } from 'react-cheminfo/core';
-import { createTabRouter } from 'react-cheminfo/core';
+import type { Language, TabRouter } from 'react-cheminfo/core';
+import {
+  LANGUAGES,
+  createTabRouter,
+  joinBasePath,
+  readLanguagePath,
+  withLanguagePath,
+} from 'react-cheminfo/core';
 
 export type Page = 'generator' | 'exercises' | 'fragments' | 'about';
 
@@ -33,13 +39,35 @@ export function createPageRouter(basePath = ''): TabRouter<Page> {
 }
 
 /**
- * The page an address opens. An address this site does not know opens the
- * generator, and is described as the generator rather than under its own name.
+ * The addresses of one language of the site: `/exercises` in English,
+ * `/fr/exercises` in French.
+ *
+ * The language is a prefix sitting between the mount and the page, so it is
+ * handed to the router as part of the base it writes under — one address for
+ * each language of each page, which is what lets a search engine offer a
+ * French reader the French page instead of folding all five into one result.
+ * @param language - The language the addresses are written in.
+ * @param basePath - The path the deployment is mounted at, empty on a host of its own.
+ * @returns The parser and the serializer of that language's addresses.
+ */
+export function createLanguageRouter(
+  language: Language,
+  basePath = '',
+): TabRouter<Page> {
+  return createPageRouter(
+    joinBasePath(basePath, withLanguagePath(language, '/')),
+  );
+}
+
+/**
+ * The page an address opens, whichever language it is written in. An address
+ * this site does not know opens the generator, and is described as the
+ * generator rather than under its own name.
  * @param pathname - The path of the address, from the site's own root.
  * @returns The page it opens.
  */
 export function readPageOf(pathname: string): Page {
-  return UNMOUNTED.parse(pathname).tab;
+  return UNMOUNTED.parse(readLanguagePath(pathname, LANGUAGES).path).tab;
 }
 
 const PAGES = Object.keys(PAGE_PATHS) as Page[];

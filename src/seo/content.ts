@@ -4,8 +4,8 @@
  * All 4 addresses used to ship the same body — this site's menu — so a crawler
  * was handed one text for every page and told, by the title alone, that they
  * were different pages. Read by the build and by nothing else: `vite.config.ts`
- * calls it once per route, so none of this reaches the bundle a browser
- * downloads.
+ * calls it once per route per language, so none of this reaches the bundle a
+ * browser downloads.
  *
  * A page with nothing written for it falls back to the name and the sentence it
  * is already indexed under. That repeats the snippet rather than adding to it,
@@ -13,32 +13,29 @@
  * thin page is never a duplicate of its neighbour.
  */
 
-import type { PageContent, RouteMeta } from 'react-cheminfo/core';
+import type { Language, PageContent, RouteMeta } from 'react-cheminfo/core';
 
-/** The pages written for in their own words. */
-const PAGES: Record<string, PageContent> = {
-  '/': {
-    heading: 'Every constitutional isomer of a molecular formula',
-    paragraphs: [
-      'Type a formula and the isomers are enumerated one by one, counted as they come. Surge itself runs as WebAssembly in the page, so a formula with hundreds of thousands of isomers costs your own tab rather than a server.',
-      'Constitutional isomers are the structures a formula allows: the same atoms bonded differently. Stereoisomers are not among them, which is why the count is smaller than the number of distinct molecules.',
-    ],
-  },
-};
+import { translate } from '../i18n/messages.ts';
+import { PAGE_PATHS } from '../state/pages.ts';
 
 /**
- * What one address says for itself.
+ * What one address says for itself, in the language it is served in.
  *
- * Read by `cheminfoPrerender` once per route at build time.
- * @param route - The address being written.
+ * Read by `cheminfoPrerender` once per route per language at build time.
+ * @param route - The address being written, already in that language.
+ * @param language - The language the page is served in.
  * @returns Its text, authored where there is any and otherwise the name and
  * sentence the route already carries.
  */
-export function pageContent(route: RouteMeta): PageContent {
-  return (
-    PAGES[route.path] ?? {
+export function pageContent(route: RouteMeta, language: Language): PageContent {
+  if (route.path === PAGE_PATHS.generator) {
+    return {
       heading: route.title,
-      paragraphs: [route.description],
-    }
-  );
+      paragraphs: [
+        translate('seo.generator.paragraph1', language),
+        translate('seo.generator.paragraph2', language),
+      ],
+    };
+  }
+  return { heading: route.title, paragraphs: [route.description] };
 }

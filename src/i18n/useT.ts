@@ -4,7 +4,7 @@
 
 import { useSignals } from '@preact/signals-react/runtime';
 
-import { preferences } from '../state/language.ts';
+import { route } from '../state/router.ts';
 
 import type { Language, MessageKey, MessageValues } from './messages.ts';
 import { translate } from './messages.ts';
@@ -23,7 +23,9 @@ export function useT(): (key: MessageKey, values?: MessageValues) => string {
 }
 
 /**
- * The language the visitor reads the site in.
+ * The language the visitor reads the site in, which is the one the address
+ * names: `/fr/exercises` is the French exercises page, and switching language
+ * is a move to another address rather than a setting.
  * @returns The language.
  */
 export function useLanguage(): Language {
@@ -31,5 +33,5 @@ export function useLanguage(): Language {
   // Read while translating too: an edit typed in the overlay is a new version,
   // and only reading it here redraws the page with the new text.
   void translateVersion.value;
-  return preferences.language.value;
+  return route.language.value;
 }

@@ -152,6 +152,17 @@ isomers hold each motif.
 - Routing is **path based** through the History API — a teacher hands out
   `surge.cheminfo.org/exercises?formulas=…`, and a `#` in there does not survive
   being pasted around. The server answers `index.html` for any unknown path.
+- **The language is a prefix on the path**, English unprefixed: `/fr/exercises`
+  is the French exercises page, and the four pages are therefore 20 addresses,
+  each prerendered with its own `lang`, title, description and canonical and
+  tied to the other four by `hreflang`. `state/router.ts` reads it off the
+  address — mount off, then `readLanguagePath` — and `route.language` is where
+  the page's language comes from; the stored preference only decides what a
+  bare `/` opens for somebody coming back. A `?lang=` handed over by a sibling
+  site is adopted once and the address rewritten with `replaceState`, and
+  **nothing else is ever redirected**: a shared `/fr/exercises` is French for
+  everybody, `/exercises` English for everybody. A path is never translated,
+  so progress, share links and bookmarks survive a switch.
 - **Everything a page is set up with lives in the address**, the generator's
   search included (`state/generatorUrl.ts` reads it before the first paint and
   writes it on every run), so a Share button can hand out what is on screen.

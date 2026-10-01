@@ -1,10 +1,11 @@
 import react from '@vitejs/plugin-react';
-import { trimTrailingSlash } from 'react-cheminfo/core';
+import { LANGUAGES, trimTrailingSlash } from 'react-cheminfo/core';
 import { cheminfoBuildInfo, cheminfoPrerender } from 'react-cheminfo/vite';
 import { defineConfig } from 'vite';
 
+import { translate } from './src/i18n/messages.ts';
 import { pageContent } from './src/seo/content.ts';
-import { PAGE_ROUTES } from './src/seo/routes.ts';
+import { routesFor } from './src/seo/routes.ts';
 import { configuredSiteUrl } from './src/state/sitePath.ts';
 
 // The project's own port, derived from its creation date, never Vite's stock
@@ -31,7 +32,13 @@ export default defineConfig({
     cheminfoBuildInfo(),
     cheminfoPrerender({
       site: 'surge',
-      routes: PAGE_ROUTES,
+      // One file per address per language — `/exercises` and `/fr/exercises` —
+      // each with its own `lang`, title, description and canonical, tied
+      // together by the `hreflang` set. The table is a function of the
+      // language because its prose comes from the catalogs; the paths it names
+      // are the same in every one of them.
+      languages: LANGUAGES,
+      routes: routesFor,
       // What each address says for itself: without it every address ships the
       // same body, this site's menu, and a search engine folds them into one.
       content: pageContent,
@@ -46,20 +53,42 @@ export default defineConfig({
       operatingSystem: 'Any',
       description:
         'Enumerate every constitutional isomer of a molecular formula with Surge in the browser, keep only the isomers containing a fragment you draw, and practise finding the isomers yourself.',
-      noscript: {
-        heading: 'surge.cheminfo.org — constitutional isomers',
-        intro:
-          'Type a molecular formula and get every constitutional isomer of it, enumerated by Surge running as WebAssembly in your browser — so nothing is uploaded and nothing is queued. The tool therefore needs JavaScript.',
+      // A function of the language: the crawl path is the only way through the
+      // site for a crawler that runs no script, and on a French page it is
+      // French — its paragraph and the label under every link included.
+      noscript: (language) => ({
+        // No `heading`: every page writes its own, through `content` below.
+        intro: translate('seo.noscript.intro', language),
         // Relative, resolved against the `<base>` the container stamps in: the
         // build bakes in no mount, so one image answers both
         // `surge.cheminfo.org` and `www.cheminfo.org/surge`.
         hrefs: 'relative',
         ecosystem: { taglines: false },
-      },
+      }),
     }),
   ],
   build: {
     target: 'esnext',
+  },
+  resolve: {
+    // `react-cheminfo` is linked from the checkout next door while the
+    // per-language prerender waits for a release, so without this its own
+    // `node_modules` gives the page a second React: every component it exports
+    // then calls hooks against a dispatcher the active renderer never
+    // populated, and the first render dies on `Cannot read properties of
+    // null`. Blueprint, emotion, react-science, react-ocl and openchemlib all
+    // hold context or state of their own and duplicate the same way.
+    dedupe: [
+      'react',
+      'react-dom',
+      '@blueprintjs/core',
+      '@blueprintjs/icons',
+      '@emotion/react',
+      '@emotion/styled',
+      'react-science',
+      'react-ocl',
+      'openchemlib',
+    ],
   },
   // Surge is reached from a worker, so the startup scan never walks to it and
   // it is discovered on the first enumeration instead — which reloads the page
