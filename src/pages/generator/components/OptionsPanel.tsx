@@ -8,6 +8,7 @@ import {
   Tag,
 } from '@blueprintjs/core';
 import { useSignals } from '@preact/signals-react/runtime';
+import { NumberInput } from 'react-cheminfo/ui';
 
 import { useT } from '../../../i18n/useT.ts';
 import { data, preferences, view } from '../../../state/generator.ts';
@@ -41,12 +42,13 @@ export default function OptionsPanel() {
             label={t('ui.generator.limit')}
             helperText="Structures returned"
           >
-            <InputGroup
-              type="number"
+            <NumberInput
+              integer
               min={1}
-              value={String(preferences.limit.value)}
-              onValueChange={(value) => {
-                preferences.limit.value = Number(value) || 1;
+              value={preferences.limit.value}
+              ariaLabel={t('ui.generator.limit')}
+              onChange={(value) => {
+                preferences.limit.value = value;
               }}
             />
           </FormGroup>
@@ -54,14 +56,13 @@ export default function OptionsPanel() {
             label={t('ui.generator.timeout')}
             helperText="Seconds, at most 30"
           >
-            <InputGroup
-              type="number"
+            <NumberInput
               min={0.1}
               max={30}
-              step={1}
-              value={String(preferences.timeout.value)}
-              onValueChange={(value) => {
-                preferences.timeout.value = Number(value) || 2;
+              value={preferences.timeout.value}
+              ariaLabel={t('ui.generator.timeout')}
+              onChange={(value) => {
+                preferences.timeout.value = value;
               }}
             />
           </FormGroup>
